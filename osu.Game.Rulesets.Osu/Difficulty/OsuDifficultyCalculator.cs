@@ -57,6 +57,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 flashlightRating *= 0.7;
             }
 
+            var magnetisedMod = mods.FirstOrDefault(h => h is OsuModMagnetised);
+
+            if (magnetisedMod is OsuModMagnetised mod)
+            {
+                double magnetisedNerfFactor = 1 - Math.Pow(mod.AttractionStrength.Value, 2);
+
+                aimRating *= magnetisedNerfFactor;
+                flashlightRating *= magnetisedNerfFactor * 0.5;
+            }
+
             double baseAimPerformance = Math.Pow(5 * Math.Max(1, aimRating / 0.0675) - 4, 3) / 100000;
             double baseSpeedPerformance = Math.Pow(5 * Math.Max(1, speedRating / 0.0675) - 4, 3) / 100000;
             double baseFlashlightPerformance = 0.0;
