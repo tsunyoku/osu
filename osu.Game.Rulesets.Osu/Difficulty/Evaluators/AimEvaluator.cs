@@ -10,10 +10,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 {
     public static class AimEvaluator
     {
-        private const double wide_angle_multiplier = 1.5;
-        private const double acute_angle_multiplier = 1.95;
-        private const double slider_multiplier = 1.35;
-        private const double velocity_change_multiplier = 0.75;
+        private const double wide_angle_multiplier = 1.45;
+        private const double acute_angle_multiplier = 2.0;
+        private const double slider_multiplier = 1.3;
+        private const double velocity_change_multiplier = 0.7;
 
         /// <summary>
         /// Evaluates the difficulty of aiming the current object, based on:
@@ -129,7 +129,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         }
 
         private static double calcWideAngleBonus(double angle) => Math.Pow(Math.Sin(3.0 / 4 * (Math.Min(5.0 / 6 * Math.PI, Math.Max(Math.PI / 6, angle)) - Math.PI / 6)), 2);
-
         private static double calcAcuteAngleBonus(double angle) => 1 - calcWideAngleBonus(angle);
     }
 }
