@@ -11,6 +11,8 @@ namespace osu.Game.Utils
 {
     public static class StatUtils
     {
+        private const double sqrt2_pi = 2.5066282746310005024157652848110452530069867406099d;
+
         /// <summary>
         /// **************************************
         /// COEFFICIENTS FOR METHOD ErfImp       *
@@ -726,6 +728,17 @@ namespace osu.Game.Utils
             var objective = new ValueObjectiveFunction(v => function(v[0]));
             double minimum = NelderMeadSimplex.Minimum(objective, initialGuess, tolerance, maxIterations);
             return minimum;
+        }
+
+        public static double NormalPdf(double mean, double stddev, double x)
+        {
+            if (stddev < 0.0)
+            {
+                throw new ArgumentException("Invalid parametrization for the distribution.");
+            }
+
+            double d = (x - mean) / stddev;
+            return Math.Exp(-0.5 * d * d) / (sqrt2_pi * stddev);
         }
     }
 }
