@@ -13,7 +13,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
     public static class RhythmEvaluator
     {
         private const int history_time_max = 5 * 1000; // 5 seconds of calculatingRhythmBonus max.
-        private const double rhythm_multiplier = 1.14;
+        private const double rhythm_multiplier = 0.99;
         private const int max_island_size = 7;
 
         /// <summary>
