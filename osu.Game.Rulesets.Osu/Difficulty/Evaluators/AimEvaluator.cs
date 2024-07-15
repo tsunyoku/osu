@@ -11,7 +11,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
     public static class AimEvaluator
     {
         private const double wide_angle_multiplier = 1.5;
-        private const double acute_angle_multiplier = 1.95;
+        private const double acute_angle_multiplier = 2.0;
         private const double slider_multiplier = 1.35;
         private const double velocity_change_multiplier = 0.75;
 
@@ -77,13 +77,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     wideAngleBonus = calcWideAngleBonus(currAngle);
                     acuteAngleBonus = calcAcuteAngleBonus(currAngle);
 
-                    if (osuCurrObj.StrainTime > 100) // Only buff deltaTime exceeding 300 bpm 1/2.
+                    if (osuCurrObj.StrainTime > 100 || osuCurrObj.LazyJumpDistance < OsuDifficultyHitObject.NORMALISED_RADIUS) // Only buff deltaTime exceeding 300 bpm 1/2  and spacing exceeding one radius (to ensure easily cheesable patterns aren't buffed)
                         acuteAngleBonus = 0;
                     else
                     {
                         acuteAngleBonus *= calcAcuteAngleBonus(lastAngle) // Multiply by previous angle, we don't want to buff unless this is a wiggle type pattern.
                                            * Math.Min(angleBonus, 125 / osuCurrObj.StrainTime) // The maximum velocity we buff is equal to 125 / strainTime
-                                           * Math.Pow(Math.Sin(Math.PI / 2 * Math.Min(1, (100 - osuCurrObj.StrainTime) / 25)), 2) // scale buff from 150 bpm 1/4 to 200 bpm 1/4
+                                           * (osuCurrObj.StrainTime / 75 * Math.Pow((100 - osuCurrObj.StrainTime) / 25, 2)) // Scale with bpm, uncapped (hopefully this doesn't break, should be picked up by smoogisheet if it does)
                                            * Math.Pow(Math.Sin(Math.PI / 2 * (Math.Clamp(osuCurrObj.LazyJumpDistance, 50, 100) - 50) / 50), 2); // Buff distance exceeding 50 (radius) up to 100 (diameter).
                     }
 
@@ -116,6 +116,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             {
                 // Reward sliders based on velocity.
                 sliderBonus = osuLastObj.TravelDistance / osuLastObj.TravelTime;
+            }
+
+            // The spacing bonus in speed evaluation
+            double flowBonus = Math.Pow((osuLastObj?.MinimumJumpDistance ?? 0) / SpeedEvaluator.SINGLE_SPACING_THRESHOLD, 3.5);
+
+            // Part of the aiming difficulty for this object is accounted for in the speed evaluator, so reduce aim difficulty here
+            if (flowBonus < 1)
+            {
+                aimStrain *= 0.5 + 0.5 * Math.Sqrt(flowBonus);
+                wideAngleBonus *= 0.5 + 0.5 * Math.Sqrt(flowBonus);
             }
 
             // Add in acute angle bonus or wide angle bonus + velocity change bonus, whichever is larger.
