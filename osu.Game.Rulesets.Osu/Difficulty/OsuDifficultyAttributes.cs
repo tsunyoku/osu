@@ -84,6 +84,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         /// </summary>
         public int SpinnerCount { get; set; }
 
+        [JsonProperty("aim_difficult_strain_count")]
+        public double AimDifficultStrainCount { get; set; }
+
+        [JsonProperty("speed_difficult_strain_count")]
+        public double SpeedDifficultStrainCount { get; set; }
+
         public override IEnumerable<(int attributeId, object value)> ToDatabaseAttributes()
         {
             foreach (var v in base.ToDatabaseAttributes())
@@ -100,6 +106,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             yield return (ATTRIB_ID_SLIDER_FACTOR, SliderFactor);
             yield return (ATTRIB_ID_SPEED_NOTE_COUNT, SpeedNoteCount);
+
+            yield return (ATTRIB_ID_AIM_DIFFICULT_STRAIN_COUNT, AimDifficultStrainCount);
+            yield return (ATTRIB_ID_SPEED_DIFFICULT_STRAIN_COUNT, SpeedDifficultStrainCount);
         }
 
         public override void FromDatabaseAttributes(IReadOnlyDictionary<int, double> values, IBeatmapOnlineInfo onlineInfo)
@@ -119,6 +128,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             HitCircleCount = onlineInfo.CircleCount;
             SliderCount = onlineInfo.SliderCount;
             SpinnerCount = onlineInfo.SpinnerCount;
+
+            AimDifficultStrainCount = values[ATTRIB_ID_AIM_DIFFICULT_STRAIN_COUNT];
+            SpeedDifficultStrainCount = values[ATTRIB_ID_SPEED_DIFFICULT_STRAIN_COUNT];
         }
 
         #region Newtonsoft.Json implicit ShouldSerialize() methods
