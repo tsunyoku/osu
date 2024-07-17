@@ -24,10 +24,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         /// </summary>
         protected virtual int ReducedSectionCount => 10;
 
-        protected virtual int ReducedEarlySectionCount => 50;
-
-        protected virtual double ReducedEarlySectionProportion => 0.1;
-
         /// <summary>
         /// The baseline multiplier applied to the section with the biggest strain.
         /// </summary>
@@ -53,16 +49,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             // Sections with 0 strain are excluded to avoid worst-case time complexity of the following sort (e.g. /b/2351871).
             // These sections will not contribute to the difficulty.
-            var peaks = GetCurrentStrainPeaks().Where(p => p > 0).ToList();
-
-            // We are reducing the highest strains first to account for extreme difficulty spikes
-            int reducedEarlyStrains = Math.Min((int)(peaks.Count * ReducedEarlySectionProportion), ReducedEarlySectionCount);
-
-            for (int i = 0; i < reducedEarlyStrains; i++)
-            {
-                double scale = Math.Log10(Interpolation.Lerp(1, 10, Math.Clamp((float)i / reducedEarlyStrains, 0, 1)));
-                peaks[i] *= Interpolation.Lerp(ReducedStrainBaseline, 1.0, scale);
-            }
+            var peaks = GetCurrentStrainPeaks().Where(p => p > 0);
 
             List<double> strains = peaks.OrderDescending().ToList();
 
