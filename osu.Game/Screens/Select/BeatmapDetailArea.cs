@@ -8,6 +8,7 @@ using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Game.Beatmaps;
+using osu.Game.Screens.Select.Leaderboards;
 
 namespace osu.Game.Screens.Select
 {
@@ -33,6 +34,8 @@ namespace osu.Game.Screens.Select
         protected Bindable<BeatmapDetailAreaTabItem> CurrentTab => tabControl.Current;
 
         protected Bindable<bool> CurrentModsFilter => tabControl.CurrentModsFilter;
+
+        protected Bindable<BeatmapLeaderboardSort> CurrentSort => tabControl.CurrentSort;
 
         private readonly Container content;
         protected override Container<Drawable> Content => content;
@@ -82,7 +85,8 @@ namespace osu.Game.Screens.Select
         /// </summary>
         /// <param name="tab">The tab that was selected.</param>
         /// <param name="selectedMods">Whether the currently-selected mods should be considered.</param>
-        protected virtual void OnTabChanged(BeatmapDetailAreaTabItem tab, bool selectedMods)
+        /// <param name="sort">The current beatmap leaderboard sort.</param>
+        protected virtual void OnTabChanged(BeatmapDetailAreaTabItem tab, bool selectedMods, BeatmapLeaderboardSort sort)
         {
             switch (tab)
             {

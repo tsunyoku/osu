@@ -20,6 +20,7 @@ using osu.Game.Rulesets.Scoring;
 using osu.Game.Screens.OnlinePlay.Lounge.Components;
 using osu.Game.Screens.Select;
 using osu.Game.Screens.Select.Filter;
+using osu.Game.Screens.Select.Leaderboards;
 using osu.Game.Skinning;
 using osu.Game.Users;
 
@@ -211,6 +212,8 @@ namespace osu.Game.Configuration
 
             SetDefault(OsuSetting.EditorTimelineShowTimingChanges, true);
             SetDefault(OsuSetting.EditorTimelineShowTicks, true);
+
+            SetDefault(OsuSetting.BeatmapLeaderboardSort, BeatmapLeaderboardSort.Score);
         }
 
         protected override bool CheckLookupContainsPrivateInformation(OsuSetting lookup)
@@ -444,5 +447,6 @@ namespace osu.Game.Configuration
         HideCountryFlags,
         EditorTimelineShowTimingChanges,
         EditorTimelineShowTicks,
+        BeatmapLeaderboardSort,
     }
 }

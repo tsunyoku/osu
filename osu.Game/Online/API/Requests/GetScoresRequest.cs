@@ -21,8 +21,9 @@ namespace osu.Game.Online.API.Requests
         private readonly BeatmapLeaderboardScope scope;
         private readonly IRulesetInfo ruleset;
         private readonly IEnumerable<IMod> mods;
+        private readonly BeatmapLeaderboardSort sort;
 
-        public GetScoresRequest(IBeatmapInfo beatmapInfo, IRulesetInfo ruleset, BeatmapLeaderboardScope scope = BeatmapLeaderboardScope.Global, IEnumerable<IMod>? mods = null)
+        public GetScoresRequest(IBeatmapInfo beatmapInfo, IRulesetInfo ruleset, BeatmapLeaderboardScope scope = BeatmapLeaderboardScope.Global, IEnumerable<IMod>? mods = null, BeatmapLeaderboardSort sort = BeatmapLeaderboardSort.Score)
         {
             if (beatmapInfo.OnlineID <= 0)
                 throw new InvalidOperationException($"Cannot lookup a beatmap's scores without having a populated {nameof(IBeatmapInfo.OnlineID)}.");
@@ -34,6 +35,7 @@ namespace osu.Game.Online.API.Requests
             this.scope = scope;
             this.ruleset = ruleset ?? throw new ArgumentNullException(nameof(ruleset));
             this.mods = mods ?? Array.Empty<IMod>();
+            this.sort = sort;
         }
 
         protected override string Target => $@"beatmaps/{beatmapInfo.OnlineID}/solo-scores{createQueryParameters()}";
@@ -44,6 +46,7 @@ namespace osu.Game.Online.API.Requests
 
             query.Append($@"type={scope.ToString().ToLowerInvariant()}");
             query.Append($@"&mode={ruleset.ShortName}");
+            query.Append($@"&sort={sort.ToString().ToLowerInvariant()}_desc");
 
             foreach (var mod in mods)
                 query.Append($@"&mods[]={mod.Acronym}");
@@ -59,7 +62,8 @@ namespace osu.Game.Online.API.Requests
             return beatmapInfo.Equals(other.beatmapInfo)
                    && scope == other.scope
                    && ruleset.Equals(other.ruleset)
-                   && mods.SequenceEqual(other.mods);
+                   && mods.SequenceEqual(other.mods)
+                   && sort == other.sort;
         }
     }
 }

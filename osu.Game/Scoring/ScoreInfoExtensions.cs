@@ -27,6 +27,18 @@ namespace osu.Game.Scoring
                      .ThenBy(s => s.Date);
 
         /// <summary>
+        /// Orders an array of <see cref="ScoreInfo"/>s by total score.
+        /// </summary>
+        /// <param name="scores">The array of <see cref="ScoreInfo"/>s to reorder.</param>
+        /// <returns>The given <paramref name="scores"/> ordered by decreasing total score.</returns>
+        public static IEnumerable<ScoreInfo> OrderByPP(this IEnumerable<ScoreInfo> scores)
+            => scores.OrderByDescending(s => s.PP)
+                     .ThenBy(s => s.TotalScore)
+                     .ThenBy(s => s.OnlineID)
+                     // Local scores may not have an online ID. Fall back to date in these cases.
+                     .ThenBy(s => s.Date);
+
+        /// <summary>
         /// Retrieves the maximum achievable combo for the provided score.
         /// </summary>
         /// <param name="score">The <see cref="ScoreInfo"/> to compute the maximum achievable combo for.</param>

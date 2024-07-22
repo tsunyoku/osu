@@ -14,6 +14,8 @@ using osu.Framework.Graphics.Containers;
 using osu.Game.Graphics;
 using osu.Game.Graphics.UserInterface;
 using osu.Framework.Graphics.Shapes;
+using osu.Game.Screens.Select.Leaderboards;
+using osuTK;
 
 namespace osu.Game.Screens.Select
 {
@@ -33,7 +35,13 @@ namespace osu.Game.Screens.Select
             set => modsCheckbox.Current = value;
         }
 
-        public Action<BeatmapDetailAreaTabItem, bool> OnFilter; // passed the selected tab and if mods is checked
+        public Bindable<BeatmapLeaderboardSort> CurrentSort
+        {
+            get => leSort;
+            set => leSort = value;
+        }
+
+        public Action<BeatmapDetailAreaTabItem, bool, BeatmapLeaderboardSort> OnFilter; // passed the selected tab, if mods is checked and the sort
 
         public IReadOnlyList<BeatmapDetailAreaTabItem> TabItems
         {
@@ -43,7 +51,11 @@ namespace osu.Game.Screens.Select
 
         private readonly OsuTabControlCheckbox modsCheckbox;
         private readonly OsuTabControl<BeatmapDetailAreaTabItem> tabs;
+        //private readonly OsuTabSortCheckbox sort;
         private readonly Container tabsContainer;
+
+        private Bindable<BeatmapLeaderboardSort> leSort = new Bindable<BeatmapLeaderboardSort>();
+        private readonly OsuTabControl<BeatmapLeaderboardSort> sortTab;
 
         public BeatmapDetailAreaTabControl()
         {
@@ -70,28 +82,52 @@ namespace osu.Game.Screens.Select
                         IsSwitchable = true,
                     },
                 },
-                modsCheckbox = new OsuTabControlCheckbox
+                new FillFlowContainer
                 {
+                    AutoSizeAxes = Axes.Both,
+                    Spacing = new Vector2(5f, 0f),
+                    Direction = FillDirection.Horizontal,
                     Anchor = Anchor.BottomRight,
                     Origin = Anchor.BottomRight,
-                    Text = @"Selected Mods",
-                    Alpha = 0,
-                },
+                    Children = new Drawable[]
+                    {
+                        modsCheckbox = new OsuTabControlCheckbox
+                        {
+                            Anchor = Anchor.BottomRight,
+                            Origin = Anchor.BottomRight,
+                            Text = @"Selected Mods",
+                            Alpha = 0,
+                        },
+                        sortTab = new OsuTabControl<BeatmapLeaderboardSort>
+                        {
+                            Anchor = Anchor.BottomRight,
+                            Origin = Anchor.BottomRight,
+                            Current = { BindTarget = leSort },
+                            Size = new Vector2(100, 100),
+                        },
+                        // sort = new OsuTabSortCheckbox
+                        // {
+                        //     Anchor = Anchor.BottomRight,
+                        //     Origin = Anchor.BottomRight,
+                        // },
+                    }
+                }
             };
 
             tabs.Current.ValueChanged += _ => invokeOnFilter();
             modsCheckbox.Current.ValueChanged += _ => invokeOnFilter();
+            leSort.ValueChanged += _ => invokeOnFilter();
         }
 
         [BackgroundDependencyLoader]
         private void load(OsuColour colour)
         {
-            modsCheckbox.AccentColour = tabs.AccentColour = colour.YellowLight;
+            modsCheckbox.AccentColour = tabs.AccentColour = sortTab.AccentColour = colour.YellowLight;
         }
 
         private void invokeOnFilter()
         {
-            OnFilter?.Invoke(tabs.Current.Value, modsCheckbox.Current.Value);
+            OnFilter?.Invoke(tabs.Current.Value, modsCheckbox.Current.Value, leSort.Value);
 
             if (tabs.Current.Value.FilterableByMods)
             {
@@ -103,6 +139,44 @@ namespace osu.Game.Screens.Select
                 modsCheckbox.FadeTo(0, 200, Easing.OutQuint);
                 tabsContainer.Padding = new MarginPadding();
             }
+        }
+    }
+
+    public partial class OsuTabSortCheckbox : Container
+    {
+        private OsuTabControlCheckbox checkbox;
+
+        public Bindable<BeatmapLeaderboardSort> Sort = new Bindable<BeatmapLeaderboardSort>();
+
+        public Color4 AccentColour
+        {
+            get => checkbox.AccentColour;
+            set => checkbox.AccentColour = value;
+        }
+
+        [BackgroundDependencyLoader]
+        private void load()
+        {
+            AutoSizeAxes = Axes.Both;
+
+            Child = checkbox = new OsuTabControlCheckbox
+            {
+                Text = formatSortText()
+            };
+
+            checkbox.Current.ValueChanged += checkbox => Sort.Value = checkbox.NewValue ? BeatmapLeaderboardSort.Score : BeatmapLeaderboardSort.PP;
+            Sort.ValueChanged += _ => checkbox.Text = formatSortText();
+        }
+
+        private string formatSortText()
+        {
+            if (Sort.Value == BeatmapLeaderboardSort.Score)
+                return "Order by Score";
+
+            if (Sort.Value == BeatmapLeaderboardSort.PP)
+                return "Order by PP";
+
+            return string.Empty;
         }
     }
 }

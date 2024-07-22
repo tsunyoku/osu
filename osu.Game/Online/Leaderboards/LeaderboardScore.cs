@@ -51,6 +51,7 @@ namespace osu.Game.Online.Leaderboards
 
         private readonly int? rank;
         private readonly bool isOnlineScope;
+        private readonly bool displayPP;
 
         private Box background;
         private Container content;
@@ -77,12 +78,13 @@ namespace osu.Game.Online.Leaderboards
         [Resolved]
         private ScoreManager scoreManager { get; set; } = null!;
 
-        public LeaderboardScore(ScoreInfo score, int? rank, bool isOnlineScope = true)
+        public LeaderboardScore(ScoreInfo score, int? rank, bool isOnlineScope = true, bool displayPP = false)
         {
             Score = score;
 
             this.rank = rank;
             this.isOnlineScope = isOnlineScope;
+            this.displayPP = displayPP;
 
             RelativeSizeAxes = Axes.X;
             Height = HEIGHT;
@@ -220,7 +222,6 @@ namespace osu.Game.Online.Leaderboards
                                         {
                                             TextColour = Color4.White,
                                             GlowColour = Color4Extensions.FromHex(@"83ccfa"),
-                                            Current = scoreManager.GetBindableTotalScoreString(Score),
                                             Font = OsuFont.Numeric.With(size: 23),
                                         },
                                         RankContainer = new Container
@@ -251,6 +252,11 @@ namespace osu.Game.Online.Leaderboards
                     },
                 },
             };
+
+            if (displayPP && Score.PP != null)
+                ScoreText.Text = $"{Score.PP.Value:N0}pp";
+            else
+                ScoreText.Current = scoreManager.GetBindableTotalScoreString(Score);
 
             innerAvatar.OnLoadComplete += d => d.FadeInFromZero(200);
         }

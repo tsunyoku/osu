@@ -33,6 +33,8 @@ namespace osu.Game.Screens.Select
 
         private Bindable<bool> selectedModsFilter;
 
+        private Bindable<BeatmapLeaderboardSort> selectedSort;
+
         public PlayBeatmapDetailArea()
         {
             Add(Leaderboard = new BeatmapLeaderboard { RelativeSizeAxes = Axes.Both });
@@ -43,12 +45,16 @@ namespace osu.Game.Screens.Select
         {
             selectedTab = config.GetBindable<TabType>(OsuSetting.BeatmapDetailTab);
             selectedModsFilter = config.GetBindable<bool>(OsuSetting.BeatmapDetailModsFilter);
+            selectedSort = config.GetBindable<BeatmapLeaderboardSort>(OsuSetting.BeatmapLeaderboardSort);
 
             selectedTab.BindValueChanged(tab => CurrentTab.Value = getTabItemFromTabType(tab.NewValue), true);
             CurrentTab.BindValueChanged(tab => selectedTab.Value = getTabTypeFromTabItem(tab.NewValue));
 
             selectedModsFilter.BindValueChanged(checkbox => CurrentModsFilter.Value = checkbox.NewValue, true);
             CurrentModsFilter.BindValueChanged(checkbox => selectedModsFilter.Value = checkbox.NewValue);
+
+            selectedSort.BindValueChanged(sort => CurrentSort.Value = sort.NewValue, true);
+            CurrentSort.BindValueChanged(sort => selectedSort.Value = sort.NewValue);
         }
 
         public override void Refresh()
@@ -58,11 +64,12 @@ namespace osu.Game.Screens.Select
             Leaderboard.RefetchScores();
         }
 
-        protected override void OnTabChanged(BeatmapDetailAreaTabItem tab, bool selectedMods)
+        protected override void OnTabChanged(BeatmapDetailAreaTabItem tab, bool selectedMods, BeatmapLeaderboardSort sort)
         {
-            base.OnTabChanged(tab, selectedMods);
+            base.OnTabChanged(tab, selectedMods, sort);
 
             Leaderboard.FilterMods = selectedMods;
+            Leaderboard.Sort = sort;
 
             switch (tab)
             {

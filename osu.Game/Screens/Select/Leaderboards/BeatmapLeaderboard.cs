@@ -67,6 +67,22 @@ namespace osu.Game.Screens.Select.Leaderboards
             }
         }
 
+        private BeatmapLeaderboardSort sort;
+
+        public BeatmapLeaderboardSort Sort
+        {
+            get => sort;
+            set
+            {
+                if (value == sort)
+                    return;
+
+                sort = value;
+
+                RefetchScores();
+            }
+        }
+
         [Resolved]
         private IBindable<RulesetInfo> ruleset { get; set; } = null!;
 
@@ -152,7 +168,7 @@ namespace osu.Game.Screens.Select.Leaderboards
             else if (filterMods)
                 requestMods = mods.Value;
 
-            var newRequest = new GetScoresRequest(fetchBeatmapInfo, fetchRuleset, Scope, requestMods);
+            var newRequest = new GetScoresRequest(fetchBeatmapInfo, fetchRuleset, Scope, requestMods, Sort);
             newRequest.Success += response => Schedule(() =>
             {
                 // Request may have changed since fetch request.
@@ -160,8 +176,15 @@ namespace osu.Game.Screens.Select.Leaderboards
                 if (!newRequest.Equals(scoreRetrievalRequest))
                     return;
 
+                var scoreInfos = response.Scores.Select(s => s.ToScoreInfo(rulesets, fetchBeatmapInfo));
+
+                if (Sort == BeatmapLeaderboardSort.Score)
+                    scoreInfos = scoreInfos.OrderByTotalScore();
+                else
+                    scoreInfos = scoreInfos.OrderByPP();
+
                 SetScores(
-                    response.Scores.Select(s => s.ToScoreInfo(rulesets, fetchBeatmapInfo)).OrderByTotalScore(),
+                    scoreInfos,
                     response.UserScore?.CreateScoreInfo(rulesets, fetchBeatmapInfo)
                 );
             });
@@ -169,12 +192,12 @@ namespace osu.Game.Screens.Select.Leaderboards
             return scoreRetrievalRequest = newRequest;
         }
 
-        protected override LeaderboardScore CreateDrawableScore(ScoreInfo model, int index) => new LeaderboardScore(model, index, IsOnlineScope)
+        protected override LeaderboardScore CreateDrawableScore(ScoreInfo model, int index) => new LeaderboardScore(model, index, IsOnlineScope, sort == BeatmapLeaderboardSort.PP)
         {
             Action = () => ScoreSelected?.Invoke(model)
         };
 
-        protected override LeaderboardScore CreateDrawableTopScore(ScoreInfo model) => new LeaderboardScore(model, model.Position, false)
+        protected override LeaderboardScore CreateDrawableTopScore(ScoreInfo model) => new LeaderboardScore(model, model.Position, false, sort == BeatmapLeaderboardSort.PP)
         {
             Action = () => ScoreSelected?.Invoke(model)
         };

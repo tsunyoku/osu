@@ -13,6 +13,7 @@ using osu.Game.Graphics.UserInterfaceV2;
 using osu.Game.Online.Rooms;
 using osu.Game.Screens.OnlinePlay.Playlists;
 using osu.Game.Screens.Select;
+using osu.Game.Screens.Select.Leaderboards;
 using osuTK;
 
 namespace osu.Game.Screens.OnlinePlay.Components
@@ -76,9 +77,9 @@ namespace osu.Game.Screens.OnlinePlay.Components
             playlist.SelectedItem.BindTo(SelectedItem);
         }
 
-        protected override void OnTabChanged(BeatmapDetailAreaTabItem tab, bool selectedMods)
+        protected override void OnTabChanged(BeatmapDetailAreaTabItem tab, bool selectedMods, BeatmapLeaderboardSort sort)
         {
-            base.OnTabChanged(tab, selectedMods);
+            base.OnTabChanged(tab, selectedMods, sort);
 
             switch (tab)
             {
