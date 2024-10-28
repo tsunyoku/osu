@@ -1,11 +1,13 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using osu.Game.Beatmaps;
+using osu.Game.Extensions;
 using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Mods;
 
@@ -115,16 +117,24 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         {
             base.FromDatabaseAttributes(values, onlineInfo);
 
-            AimDifficulty = values[ATTRIB_ID_AIM];
-            SpeedDifficulty = values[ATTRIB_ID_SPEED];
-            OverallDifficulty = values[ATTRIB_ID_OVERALL_DIFFICULTY];
-            ApproachRate = values[ATTRIB_ID_APPROACH_RATE];
-            StarRating = values[ATTRIB_ID_DIFFICULTY];
-            FlashlightDifficulty = values.GetValueOrDefault(ATTRIB_ID_FLASHLIGHT);
-            SliderFactor = values[ATTRIB_ID_SLIDER_FACTOR];
-            AimDifficultStrainCount = values[ATTRIB_ID_AIM_DIFFICULT_STRAIN_COUNT];
-            SpeedDifficultStrainCount = values[ATTRIB_ID_SPEED_DIFFICULT_STRAIN_COUNT];
-            SpeedNoteCount = values[ATTRIB_ID_SPEED_NOTE_COUNT];
+            try
+            {
+                AimDifficulty = values.GetValueOrThrow(ATTRIB_ID_AIM);
+                SpeedDifficulty = values.GetValueOrThrow(ATTRIB_ID_SPEED);
+                OverallDifficulty = values.GetValueOrThrow(ATTRIB_ID_OVERALL_DIFFICULTY);
+                ApproachRate = values.GetValueOrThrow(ATTRIB_ID_APPROACH_RATE);
+                StarRating = values.GetValueOrThrow(ATTRIB_ID_DIFFICULTY);
+                FlashlightDifficulty = values.GetValueOrDefault(ATTRIB_ID_FLASHLIGHT);
+                SliderFactor = values.GetValueOrThrow(ATTRIB_ID_SLIDER_FACTOR);
+                AimDifficultStrainCount = values.GetValueOrThrow(ATTRIB_ID_AIM_DIFFICULT_STRAIN_COUNT);
+                SpeedDifficultStrainCount = values.GetValueOrThrow(ATTRIB_ID_SPEED_DIFFICULT_STRAIN_COUNT);
+                SpeedNoteCount = values.GetValueOrThrow(ATTRIB_ID_SPEED_NOTE_COUNT);
+            }
+            catch (DictionaryKeyMissingException ex)
+            {
+                throw new InvalidOperationException($"Missing database attribute ID {ex.Key}");
+            }
+
             DrainRate = onlineInfo.DrainRate;
             HitCircleCount = onlineInfo.CircleCount;
             SliderCount = onlineInfo.SliderCount;

@@ -1,9 +1,11 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using osu.Game.Beatmaps;
+using osu.Game.Extensions;
 using osu.Game.Rulesets.Difficulty;
 
 namespace osu.Game.Rulesets.Mania.Difficulty
@@ -32,8 +34,15 @@ namespace osu.Game.Rulesets.Mania.Difficulty
         {
             base.FromDatabaseAttributes(values, onlineInfo);
 
-            StarRating = values[ATTRIB_ID_DIFFICULTY];
-            GreatHitWindow = values[ATTRIB_ID_GREAT_HIT_WINDOW];
+            try
+            {
+                StarRating = values.GetValueOrThrow(ATTRIB_ID_DIFFICULTY);
+                GreatHitWindow = values.GetValueOrThrow(ATTRIB_ID_GREAT_HIT_WINDOW);
+            }
+            catch (DictionaryKeyMissingException ex)
+            {
+                throw new InvalidOperationException($"Missing database attribute ID {ex.Key}");
+            }
         }
     }
 }

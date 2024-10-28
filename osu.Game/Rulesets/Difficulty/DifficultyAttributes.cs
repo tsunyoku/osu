@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using osu.Game.Beatmaps;
+using osu.Game.Extensions;
 using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty
@@ -83,7 +84,14 @@ namespace osu.Game.Rulesets.Difficulty
         /// <param name="onlineInfo">The <see cref="IBeatmapOnlineInfo"/> where more information about the beatmap may be extracted from (such as AR/CS/OD/etc).</param>
         public virtual void FromDatabaseAttributes(IReadOnlyDictionary<int, double> values, IBeatmapOnlineInfo onlineInfo)
         {
-            MaxCombo = (int)values[ATTRIB_ID_MAX_COMBO];
+            try
+            {
+                MaxCombo = (int)values.GetValueOrThrow(ATTRIB_ID_MAX_COMBO);
+            }
+            catch (DictionaryKeyMissingException ex)
+            {
+                throw new InvalidOperationException($"Missing database attribute ID {ex.Key}");
+            }
         }
     }
 }
