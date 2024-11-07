@@ -18,7 +18,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         private bool usingClassicSliderAccuracy;
 
-        private double accuracy;
         private int scoreMaxCombo;
         private int countGreat;
         private int countOk;
@@ -51,7 +50,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             usingClassicSliderAccuracy = score.Mods.OfType<OsuModClassic>().Any(m => m.NoSliderHeadAccuracy.Value);
 
-            accuracy = score.Accuracy;
             scoreMaxCombo = score.MaxCombo;
             countGreat = score.Statistics.GetValueOrDefault(HitResult.Great);
             countOk = score.Statistics.GetValueOrDefault(HitResult.Ok);
@@ -311,5 +309,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         private double getComboScalingFactor(OsuDifficultyAttributes attributes) => attributes.MaxCombo <= 0 ? 1.0 : Math.Min(Math.Pow(scoreMaxCombo, 0.8) / Math.Pow(attributes.MaxCombo, 0.8), 1.0);
         private int totalHits => countGreat + countOk + countMeh + countMiss;
         private int totalImperfectHits => countOk + countMeh + countMiss;
+        private double accuracy => (double)((6 * countGreat) + (2 * countOk) + countMeh) / (6 * totalHits);
     }
 }
