@@ -309,6 +309,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         private double getComboScalingFactor(OsuDifficultyAttributes attributes) => attributes.MaxCombo <= 0 ? 1.0 : Math.Min(Math.Pow(scoreMaxCombo, 0.8) / Math.Pow(attributes.MaxCombo, 0.8), 1.0);
         private int totalHits => countGreat + countOk + countMeh + countMiss;
         private int totalImperfectHits => countOk + countMeh + countMiss;
-        private double accuracy => (double)((6 * countGreat) + (2 * countOk) + countMeh) / (6 * totalHits);
+        private double accuracy => (double)((6 * countGreat) + (2 * (countOk + countSliderEndsDropped)) + countMeh) / (6 * totalHits);
     }
 }
