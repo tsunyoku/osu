@@ -77,25 +77,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double overallDifficulty = (80 - hitWindowGreat) / 6;
 
-            aimRating = transformDifficulty(aimRating, totalHits, mods, approachRate);
-            aimRatingNoSliders = transformDifficulty(aimRatingNoSliders, totalHits, mods, approachRate);
-            speedRating = transformDifficulty(speedRating, totalHits, mods, approachRate);
-
-            if (mods.Any(m => m is OsuModBlinds))
-            {
-                // Increasing the speed value by object count for Blinds isn't ideal, so the minimum buff is given.
-                speedRating *= Math.Cbrt(1.12);
-            }
-
-            // It is important to consider accuracy difficulty when scaling with accuracy.
-            double accuracyScaling = Math.Cbrt(0.98 + Math.Pow(overallDifficulty, 2) / 2500);
-            aimRating *= accuracyScaling;
-            aimRatingNoSliders *= accuracyScaling;
-            flashlightRating *= accuracyScaling;
-
-            // Account for shorter maps having a higher ratio of 0 combo/100 combo flashlight radius.
-            flashlightRating *= Math.Cbrt(0.7 + 0.1 * Math.Min(1.0, totalHits / 200.0) +
-                                          (totalHits > 200 ? 0.2 * Math.Min(1.0, (totalHits - 200) / 200.0) : 0.0));
+            aimRating = transformAimDifficulty(aimRating, totalHits, mods, approachRate, overallDifficulty);
+            aimRatingNoSliders = transformAimDifficulty(aimRatingNoSliders, totalHits, mods, approachRate, overallDifficulty);
+            speedRating = transformSpeedDifficulty(speedRating, totalHits, mods, approachRate);
+            flashlightRating = transformFlashlightDifficulty(flashlightRating, totalHits, overallDifficulty);
 
             double sliderFactor = aimRating > 0 ? aimRatingNoSliders / aimRating : 1;
 
@@ -159,7 +144,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             return multiplier;
         }
 
-        private double transformDifficulty(double difficulty, int totalHits, Mod[] mods, double approachRate)
+        private double transformAimDifficulty(double difficulty, int totalHits, Mod[] mods, double approachRate, double overallDifficulty)
         {
             double difficultyMultiplier = 1.0;
 
@@ -184,6 +169,52 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 // We want to give more reward for lower AR when it comes to aim and HD. This nerfs high AR and buffs lower AR.
                 difficultyMultiplier *= 1.0 + 0.04 * (12.0 - approachRate);
             }
+
+            // It is important to consider accuracy difficulty when scaling with accuracy.
+            difficultyMultiplier *= 0.98 + Math.Pow(overallDifficulty, 2) / 2500;
+
+            return difficulty * Math.Cbrt(difficultyMultiplier);
+        }
+
+        private double transformSpeedDifficulty(double difficulty, int totalHits, Mod[] mods, double approachRate)
+        {
+            double difficultyMultiplier = 1.0;
+
+            double lengthBonus = 0.95 + 0.4 * Math.Min(1.0, totalHits / 2000.0) +
+                                 (totalHits > 2000 ? Math.Log10(totalHits / 2000.0) * 0.5 : 0.0);
+
+            difficultyMultiplier *= lengthBonus;
+
+            double approachRateFactor = 0.0;
+            if (approachRate > 10.33)
+                approachRateFactor = 0.3 * (approachRate - 10.33);
+
+            difficultyMultiplier *= 1.0 + approachRateFactor * lengthBonus; // Buff for longer maps with high AR.
+
+            if (mods.Any(m => m is OsuModBlinds))
+            {
+                // Increasing the speed value by object count for Blinds isn't ideal, so the minimum buff is given.
+                difficultyMultiplier *= 1.12;
+            }
+            else if (mods.Any(m => m is OsuModHidden || m is OsuModTraceable))
+            {
+                // We want to give more reward for lower AR when it comes to aim and HD. This nerfs high AR and buffs lower AR.
+                difficultyMultiplier *= 1.0 + 0.04 * (12.0 - approachRate);
+            }
+
+            return difficulty * Math.Cbrt(difficultyMultiplier);
+        }
+
+        private double transformFlashlightDifficulty(double difficulty, int totalHits, double overallDifficulty)
+        {
+            double difficultyMultiplier = 1.0;
+
+            // It is important to consider accuracy difficulty when scaling with accuracy.
+            difficultyMultiplier *= 0.98 + Math.Pow(overallDifficulty, 2) / 2500;
+
+            // Account for shorter maps having a higher ratio of 0 combo/100 combo flashlight radius.
+            difficultyMultiplier *= 0.7 + 0.1 * Math.Min(1.0, totalHits / 200.0) +
+                                    (totalHits > 200 ? 0.2 * Math.Min(1.0, (totalHits - 200) / 200.0) : 0.0);
 
             return difficulty * Math.Cbrt(difficultyMultiplier);
         }
