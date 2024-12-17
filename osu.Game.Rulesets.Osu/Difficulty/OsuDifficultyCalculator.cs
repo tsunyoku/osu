@@ -138,7 +138,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 AimDifficultStrainCount = aimDifficultyStrainCount,
                 SpeedDifficultStrainCount = speedDifficultyStrainCount,
                 ApproachRate = approachRate,
-                OverallDifficulty = (80 - hitWindowGreat) / 6,
+                OverallDifficulty = overallDifficulty,
                 DrainRate = drainRate,
                 MaxCombo = beatmap.GetMaxCombo(),
                 HitCircleCount = hitCirclesCount,
