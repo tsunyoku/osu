@@ -142,8 +142,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             aimValue *= lengthBonus;
 
             if (effectiveMissCount > 0)
-                aimValue *= calculateMissPenalty(effectiveMissCount * (1 + (usingClassicSliderAccuracy ? attributes.AimTopWeightedSliderFactor : 0)), attributes.AimDifficultStrainCount);
-
+            {
+                double estimatedSliderbreaks = Math.Min(countMeh + countOk, effectiveMissCount * attributes.AimTopWeightedSliderFactor);
+                aimValue *= calculateMissPenalty(effectiveMissCount + (usingClassicSliderAccuracy ? estimatedSliderbreaks : 0), attributes.AimDifficultStrainCount);
+            }
             double approachRateFactor = 0.0;
             if (attributes.ApproachRate > 10.33)
                 approachRateFactor = 0.3 * (attributes.ApproachRate - 10.33);
@@ -206,7 +208,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             speedValue *= lengthBonus;
 
             if (effectiveMissCount > 0)
-                speedValue *= calculateMissPenalty(effectiveMissCount * (1 + (usingClassicSliderAccuracy ? attributes.SpeedTopWeightedSliderFactor : 0)), attributes.SpeedDifficultStrainCount);
+            {
+                double estimatedSliderbreaks = Math.Min(countMeh + countOk, effectiveMissCount * attributes.SpeedTopWeightedSliderFactor);
+                speedValue *= calculateMissPenalty(effectiveMissCount + (usingClassicSliderAccuracy ? estimatedSliderbreaks : 0), attributes.SpeedDifficultStrainCount);
+            }
 
             double approachRateFactor = 0.0;
             if (attributes.ApproachRate > 10.33)
