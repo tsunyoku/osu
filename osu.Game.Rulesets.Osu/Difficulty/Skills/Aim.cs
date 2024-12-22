@@ -29,8 +29,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double skillMultiplier => 25.18;
         private double strainDecayBase => 0.15;
 
-        private readonly List<double> sliderStrains = new List<double>();
-
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
         protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
@@ -40,17 +38,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             currentStrain *= strainDecay(current.DeltaTime);
             currentStrain += AimEvaluator.EvaluateDifficultyOf(current, withSliders) * skillMultiplier;
 
-            typedObjectStrains.Add((currentStrain, current.BaseObject is Slider));
+            TypedObjectStrains.Add((currentStrain, current.BaseObject is Slider));
 
             return currentStrain;
         }
 
         public double GetDifficultSliders()
         {
-            if (sliderStrains.Count == 0)
+            IEnumerable<double> sliderStrains = TypedObjectStrains.Where(typedObjectStrain => typedObjectStrain.isSlider).Select(typedObjectStrain => typedObjectStrain.difficulty);
+            if (!sliderStrains.Any())
                 return 0;
 
-            double[] sortedStrains = typedObjectStrains.Where(typedObjectStrain => typedObjectStrain.isSlider).OrderDescending().ToArray();
+            double[] sortedStrains = sliderStrains.OrderDescending().ToArray();
 
             double maxSliderStrain = sortedStrains.Max();
             if (maxSliderStrain == 0)

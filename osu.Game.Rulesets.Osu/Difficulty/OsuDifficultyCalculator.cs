@@ -50,11 +50,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double aimDifficultyStrainCount = ((OsuStrainSkill)skills[0]).CountTopWeightedStrains();
             double speedDifficultyStrainCount = ((OsuStrainSkill)skills[2]).CountTopWeightedStrains();
-            (double hitCircles, double sliders) aimTypedDifficultyStrainCount = ((OsuStrainSkill)skills[0]).CountTypedTopWeightedStrains();
-            (double hitCircles, double sliders) speedTypedDifficultyStrainCount = ((OsuStrainSkill)skills[2]).CountTypedTopWeightedStrains();
 
-            double aimTopWeightedSliderFactor = aimTypedDifficultyStrainCount.sliders / aimTypedDifficultyStrainCount.hitCircles;
-            double speedTopWeightedSliderFactor = speedTypedDifficultyStrainCount.sliders / speedTypedDifficultyStrainCount.hitCircles;
+            double aimTopWeightedSliderFactor = ((OsuStrainSkill)skills[0]).CalculateTopWeightedSliderFactor();
+            double speedTopWeightedSliderFactor = ((OsuStrainSkill)skills[2]).CalculateTopWeightedSliderFactor();
 
             if (mods.Any(m => m is OsuModTouchDevice))
             {
