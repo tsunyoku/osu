@@ -82,8 +82,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double overallDifficulty = (80 - hitWindowGreat) / 6;
 
-            aimRating = transformAimDifficulty(aimRating, aimRelevantObjectCount, mods, approachRate, overallDifficulty);
-            aimRatingNoSliders = transformAimDifficulty(aimRatingNoSliders, aimNoSlidersRelevantObjectCount, mods, approachRate, overallDifficulty);
+            aimRating = transformAimDifficulty(aimRating, aimRelevantObjectCount, mods, approachRate, overallDifficulty, totalHits);
+            aimRatingNoSliders = transformAimDifficulty(aimRatingNoSliders, aimNoSlidersRelevantObjectCount, mods, approachRate, overallDifficulty, totalHits);
             speedRating = transformSpeedDifficulty(speedRating, speedRelevantObjectCount, mods, approachRate);
             flashlightRating = transformFlashlightDifficulty(flashlightRating, totalHits, overallDifficulty);
 
@@ -152,7 +152,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             return multiplier;
         }
 
-        private double transformAimDifficulty(double difficulty, double aimRelevantObjectCount, Mod[] mods, double approachRate, double overallDifficulty)
+        private double transformAimDifficulty(double difficulty, double aimRelevantObjectCount, Mod[] mods, double approachRate, double overallDifficulty, int totalHits)
         {
             double difficultyMultiplier = 1.0;
 
@@ -170,7 +170,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (mods.Any(h => h is OsuModRelax))
                 approachRateFactor = 0.0;
 
-            difficultyMultiplier *= 1.0 + approachRateFactor * lengthBonus;
+            double approachRateLengthBonus = 1.0 + 0.35 * Math.Min(1.0, totalHits / 2000.0) +
+                                             (totalHits > 2000 ? Math.Log10(totalHits / 2000.0) * 0.5 : 0.0);
+
+            difficultyMultiplier *= 1.0 + approachRateFactor * approachRateLengthBonus;
 
             if (mods.Any(m => m is OsuModHidden || m is OsuModTraceable))
             {
