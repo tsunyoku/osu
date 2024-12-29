@@ -170,7 +170,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (mods.Any(h => h is OsuModRelax))
                 approachRateFactor = 0.0;
 
-            difficultyMultiplier *= 1.0 + approachRateFactor;
+            difficultyMultiplier *= 1.0 + approachRateFactor * lengthBonus;
 
             if (mods.Any(m => m is OsuModHidden || m is OsuModTraceable))
             {
