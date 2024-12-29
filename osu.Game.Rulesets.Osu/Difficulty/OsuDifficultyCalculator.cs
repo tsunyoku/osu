@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
     public class OsuDifficultyCalculator : DifficultyCalculator
     {
         private const double difficulty_multiplier = 0.0655;
-        private const double performance_base_multiplier = 1.152; // This is being adjusted to keep the final pp value scaled around what it used to be when changing things.
+        private const double performance_base_multiplier = 1.4; // This is being adjusted to keep the final pp value scaled around what it used to be when changing things.
 
         public override int Version => 20241007;
 
