@@ -157,8 +157,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             difficultyMultiplier *= lengthBonus;
 
             double approachRateFactor = 0.0;
-            if (approachRate > 10.33)
-                approachRateFactor = 0.3 * (approachRate - 10.33);
+            if (approachRate > 10.5)
+                approachRateFactor = 0.25 * (approachRate - 10.5);
             else if (approachRate < 8.0)
                 approachRateFactor = 0.05 * (8.0 - approachRate);
 
@@ -170,7 +170,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (mods.Any(m => m is OsuModHidden || m is OsuModTraceable))
             {
                 // We want to give more reward for lower AR when it comes to aim and HD. This nerfs high AR and buffs lower AR.
-                difficultyMultiplier *= 1.0 + 0.04 * (12.0 - approachRate);
+                difficultyMultiplier *= 0.97 + 0.06 * (12.0 - approachRate);
             }
 
             // It is important to consider accuracy difficulty when scaling with accuracy.
@@ -189,8 +189,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             difficultyMultiplier *= lengthBonus;
 
             double approachRateFactor = 0.0;
-            if (approachRate > 10.33)
-                approachRateFactor = 0.3 * (approachRate - 10.33);
+            if (approachRate > 10.5)
+                approachRateFactor = 0.25 * (approachRate - 10.5);
 
             difficultyMultiplier *= 1.0 + approachRateFactor;
 
@@ -202,7 +202,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             else if (mods.Any(m => m is OsuModHidden || m is OsuModTraceable))
             {
                 // We want to give more reward for lower AR when it comes to aim and HD. This nerfs high AR and buffs lower AR.
-                difficultyMultiplier *= 1.0 + 0.04 * (12.0 - approachRate);
+                difficultyMultiplier *= 0.97 + 0.06 * (12.0 - approachRate);
             }
 
             return difficulty * Math.Cbrt(difficultyMultiplier);
