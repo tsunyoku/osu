@@ -20,6 +20,7 @@ using osu.Game.Overlays;
 using osu.Game.Overlays.Notifications;
 using osu.Game.Performance;
 using osu.Game.Rulesets;
+using osu.Game.Rulesets.Mods;
 using osu.Game.Scoring;
 using osu.Game.Scoring.Legacy;
 using osu.Game.Screens.Play;
@@ -105,7 +106,7 @@ namespace osu.Game.Database
             foreach (var ruleset in rulesetStore.AvailableRulesets)
             {
                 // beatmap being passed in is arbitrary here. just needs to be non-null.
-                int currentVersion = ruleset.CreateInstance().CreateDifficultyCalculator(gameBeatmap.Value).Version;
+                int currentVersion = ruleset.CreateInstance().CreateDifficultyCalculator(gameBeatmap.Value, Array.Empty<Mod>()).Version;
 
                 if (ruleset.LastAppliedDifficultyVersion < currentVersion)
                 {

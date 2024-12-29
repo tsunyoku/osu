@@ -308,7 +308,7 @@ namespace osu.Game.Tests.Visual.Gameplay
 
             public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) => new TestBeatmapConverter(beatmap, null);
 
-            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => throw new NotImplementedException();
+            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, IEnumerable<Mod> mods) => throw new NotImplementedException();
 
             public override string Description { get; } = string.Empty;
 

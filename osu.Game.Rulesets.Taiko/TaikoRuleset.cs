@@ -200,7 +200,7 @@ namespace osu.Game.Rulesets.Taiko
 
         public override IBeatmapVerifier CreateBeatmapVerifier() => new TaikoBeatmapVerifier();
 
-        public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => new TaikoDifficultyCalculator(RulesetInfo, beatmap);
+        public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, IEnumerable<Mod> mods) => new TaikoDifficultyCalculator(RulesetInfo, beatmap, mods);
 
         public override PerformanceCalculator CreatePerformanceCalculator() => new TaikoPerformanceCalculator();
 

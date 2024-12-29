@@ -58,7 +58,7 @@ namespace osu.Game.Tests.Rulesets
 
             public override DrawableRuleset CreateDrawableRulesetWith(IBeatmap beatmap, IReadOnlyList<Mod> mods = null) => null!;
             public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) => null!;
-            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => null!;
+            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, IEnumerable<Mod> mods) => null!;
         }
 
         private class TestAPIIncompatibleRuleset : Ruleset
@@ -71,7 +71,7 @@ namespace osu.Game.Tests.Rulesets
 
             public override DrawableRuleset CreateDrawableRulesetWith(IBeatmap beatmap, IReadOnlyList<Mod> mods = null) => null!;
             public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) => null!;
-            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => null!;
+            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, IEnumerable<Mod> mods) => null!;
         }
     }
 }

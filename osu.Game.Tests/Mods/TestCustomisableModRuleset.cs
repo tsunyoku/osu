@@ -36,7 +36,7 @@ namespace osu.Game.Tests.Mods
 
         public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) => throw new NotImplementedException();
 
-        public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => throw new NotImplementedException();
+        public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, IEnumerable<Mod> mods) => throw new NotImplementedException();
 
         public override string Description { get; } = "test";
         public override string ShortName { get; } = "tst";

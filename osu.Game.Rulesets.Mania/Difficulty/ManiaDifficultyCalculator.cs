@@ -29,31 +29,35 @@ namespace osu.Game.Rulesets.Mania.Difficulty
         private readonly bool isForCurrentRuleset;
         private readonly double originalOverallDifficulty;
 
+        private readonly Strain strain;
+
         public override int Version => 20241007;
 
-        public ManiaDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap)
-            : base(ruleset, beatmap)
+        public ManiaDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap, IEnumerable<Mod> mods)
+            : base(ruleset, beatmap, mods)
         {
             isForCurrentRuleset = beatmap.BeatmapInfo.Ruleset.MatchesOnlineID(ruleset);
             originalOverallDifficulty = beatmap.BeatmapInfo.Difficulty.OverallDifficulty;
+
+            strain = new Strain(Mods, ((ManiaBeatmap)Beatmap).TotalColumns);
         }
 
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills, double clockRate)
+        protected override DifficultyAttributes CreateDifficultyAttributes()
         {
-            if (beatmap.HitObjects.Count == 0)
-                return new ManiaDifficultyAttributes { Mods = mods };
+            if (Beatmap.HitObjects.Count == 0)
+                return new ManiaDifficultyAttributes { Mods = Mods };
 
             HitWindows hitWindows = new ManiaHitWindows();
-            hitWindows.SetDifficulty(beatmap.Difficulty.OverallDifficulty);
+            hitWindows.SetDifficulty(Beatmap.Difficulty.OverallDifficulty);
 
             ManiaDifficultyAttributes attributes = new ManiaDifficultyAttributes
             {
-                StarRating = skills[0].DifficultyValue() * difficulty_multiplier,
-                Mods = mods,
+                StarRating = strain.DifficultyValue() * difficulty_multiplier,
+                Mods = Mods,
                 // In osu-stable mania, rate-adjustment mods don't affect the hit window.
                 // This is done the way it is to introduce fractional differences in order to match osu-stable for the time being.
-                GreatHitWindow = Math.Ceiling((int)(getHitWindow300(mods) * clockRate) / clockRate),
-                MaxCombo = beatmap.HitObjects.Sum(maxComboForObject),
+                GreatHitWindow = Math.Ceiling((int)(getHitWindow300(Mods) * ClockRate) / ClockRate),
+                MaxCombo = Beatmap.HitObjects.Sum(maxComboForObject),
             };
 
             return attributes;
@@ -67,16 +71,16 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             return 1;
         }
 
-        protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
+        protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects()
         {
-            var sortedObjects = beatmap.HitObjects.ToArray();
+            var sortedObjects = Beatmap.HitObjects.ToArray();
 
             LegacySortHelper<HitObject>.Sort(sortedObjects, Comparer<HitObject>.Create((a, b) => (int)Math.Round(a.StartTime) - (int)Math.Round(b.StartTime)));
 
             List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
 
             for (int i = 1; i < sortedObjects.Length; i++)
-                objects.Add(new ManiaDifficultyHitObject(sortedObjects[i], sortedObjects[i - 1], clockRate, objects, objects.Count));
+                objects.Add(new ManiaDifficultyHitObject(sortedObjects[i], sortedObjects[i - 1], ClockRate, objects, objects.Count));
 
             return objects;
         }
@@ -84,10 +88,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
         // Sorting is done in CreateDifficultyHitObjects, since the full list of hitobjects is required.
         protected override IEnumerable<DifficultyHitObject> SortObjects(IEnumerable<DifficultyHitObject> input) => input;
 
-        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate) => new Skill[]
-        {
-            new Strain(mods, ((ManiaBeatmap)Beatmap).TotalColumns)
-        };
+        protected override Skill[] Skills => [strain];
 
         protected override Mod[] DifficultyAdjustmentMods
         {

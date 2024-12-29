@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using osu.Framework.Localisation;
-using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
@@ -215,27 +214,25 @@ namespace osu.Game.Tests.NonVisual
         private class TestLegacyDifficultyCalculator : DifficultyCalculator
         {
             public TestLegacyDifficultyCalculator(params Mod[] mods)
-                : base(null, null)
+                : base(null!, null!, mods)
             {
                 DifficultyAdjustmentMods = mods;
             }
 
+            public override int Version => throw new InvalidOperationException();
             protected override Mod[] DifficultyAdjustmentMods { get; }
 
-            protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills, double clockRate)
+            protected override DifficultyAttributes CreateDifficultyAttributes()
             {
                 throw new NotImplementedException();
             }
 
-            protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
+            protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects()
             {
                 throw new NotImplementedException();
             }
 
-            protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
-            {
-                throw new NotImplementedException();
-            }
+            protected override Skill[] Skills => throw new NotImplementedException();
         }
     }
 }

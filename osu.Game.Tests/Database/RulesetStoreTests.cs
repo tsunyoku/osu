@@ -148,12 +148,12 @@ namespace osu.Game.Tests.Database
                 return new OsuBeatmapConverter(beatmap, new OsuRuleset());
             }
 
-            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap)
+            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, IEnumerable<Mod> mods)
             {
                 if (!HasImplementations)
                     throw new NotImplementedException();
 
-                return new OsuDifficultyCalculator(new OsuRuleset().RulesetInfo, beatmap);
+                return new OsuDifficultyCalculator(new OsuRuleset().RulesetInfo, beatmap, mods);
             }
 
             public override string Description => "outdated ruleset";

@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using osu.Framework.Platform;
 using osu.Framework.Threading;
 using osu.Game.Database;
 using osu.Game.Online.API;
+using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Objects.Types;
 
 namespace osu.Game.Beatmaps
@@ -60,7 +62,7 @@ namespace osu.Game.Beatmaps
 
                     Debug.Assert(ruleset != null);
 
-                    var calculator = ruleset.CreateDifficultyCalculator(working);
+                    var calculator = ruleset.CreateDifficultyCalculator(working, Array.Empty<Mod>());
 
                     beatmap.StarRating = calculator.Calculate().StarRating;
                     beatmap.Length = working.Beatmap.CalculatePlayableLength();

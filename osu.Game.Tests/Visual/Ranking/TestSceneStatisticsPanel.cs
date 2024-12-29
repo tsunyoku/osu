@@ -230,7 +230,7 @@ namespace osu.Game.Tests.Visual.Ranking
 
             public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) => new TestBeatmapConverter(beatmap);
 
-            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap)
+            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, IEnumerable<Mod> mods)
             {
                 throw new NotImplementedException();
             }

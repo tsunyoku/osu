@@ -45,8 +45,9 @@ namespace osu.Game.Rulesets
         /// Version history:
         /// 2022.205.0   FramedReplayInputHandler.CollectPendingInputs renamed to FramedReplayHandler.CollectReplayInputs.
         /// 2022.822.0   All strings return values have been converted to LocalisableString to allow for localisation support.
+        /// 2024.1229.0  CreateDifficultyCalculator refactored to require a mods parameter.
         /// </summary>
-        public const string CURRENT_RULESET_API_VERSION = "2022.822.0";
+        public const string CURRENT_RULESET_API_VERSION = "2024.1229.0";
 
         /// <summary>
         /// Define the ruleset API version supported by this ruleset.
@@ -262,7 +263,7 @@ namespace osu.Game.Rulesets
         /// <returns>The <see cref="IBeatmapProcessor"/>.</returns>
         public virtual IBeatmapProcessor? CreateBeatmapProcessor(IBeatmap beatmap) => null;
 
-        public abstract DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap);
+        public abstract DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, IEnumerable<Mod> mods);
 
         /// <summary>
         /// Optionally creates a <see cref="PerformanceCalculator"/> to generate performance data from the provided score.

@@ -83,7 +83,7 @@ namespace osu.Game.Tests.Testing
             public override IEnumerable<Mod> GetModsFor(ModType type) => Array.Empty<Mod>();
             public override DrawableRuleset CreateDrawableRulesetWith(IBeatmap beatmap, IReadOnlyList<Mod>? mods = null) => null!;
             public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) => null!;
-            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => null!;
+            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, IEnumerable<Mod> mods) => null!;
         }
 
         private class TestRulesetConfigManager : IRulesetConfigManager

@@ -4,6 +4,7 @@
 using NUnit.Framework;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty;
+using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty;
 using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Tests.Beatmaps;
@@ -34,7 +35,7 @@ namespace osu.Game.Rulesets.Osu.Tests
         public void TestClassicMod(double expectedStarRating, int expectedMaxCombo, string name)
             => Test(expectedStarRating, expectedMaxCombo, name, new OsuModClassic());
 
-        protected override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => new OsuDifficultyCalculator(new OsuRuleset().RulesetInfo, beatmap);
+        protected override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, Mod[] mods) => new OsuDifficultyCalculator(new OsuRuleset().RulesetInfo, beatmap, mods);
 
         protected override Ruleset CreateRuleset() => new OsuRuleset();
     }

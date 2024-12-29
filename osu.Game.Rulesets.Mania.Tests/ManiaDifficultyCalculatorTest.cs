@@ -6,6 +6,7 @@ using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Mania.Difficulty;
 using osu.Game.Rulesets.Mania.Mods;
+using osu.Game.Rulesets.Mods;
 using osu.Game.Tests.Beatmaps;
 
 namespace osu.Game.Rulesets.Mania.Tests
@@ -22,7 +23,7 @@ namespace osu.Game.Rulesets.Mania.Tests
         public void TestClockRateAdjusted(double expectedStarRating, int expectedMaxCombo, string name)
             => Test(expectedStarRating, expectedMaxCombo, name, new ManiaModDoubleTime());
 
-        protected override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => new ManiaDifficultyCalculator(new ManiaRuleset().RulesetInfo, beatmap);
+        protected override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, Mod[] mods) => new ManiaDifficultyCalculator(new ManiaRuleset().RulesetInfo, beatmap, mods);
 
         protected override Ruleset CreateRuleset() => new ManiaRuleset();
     }

@@ -93,7 +93,7 @@ namespace osu.Game.Tests.Online
 
             public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) => throw new System.NotImplementedException();
 
-            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => throw new System.NotImplementedException();
+            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, IEnumerable<Mod> mods) => throw new System.NotImplementedException();
 
             public override string Description { get; } = string.Empty;
             public override string ShortName { get; } = string.Empty;

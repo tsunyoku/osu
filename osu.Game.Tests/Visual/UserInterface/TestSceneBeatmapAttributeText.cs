@@ -188,8 +188,8 @@ namespace osu.Game.Tests.Visual.UserInterface
             public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap)
                 => new OsuRuleset().CreateBeatmapConverter(beatmap);
 
-            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap)
-                => new TestDifficultyCalculator(new TestRuleset().RulesetInfo, beatmap);
+            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, IEnumerable<Mod> mods)
+                => new TestDifficultyCalculator(new TestRuleset().RulesetInfo, beatmap, mods);
 
             public override PerformanceCalculator CreatePerformanceCalculator()
                 => new TestPerformanceCalculator(new TestRuleset());
@@ -203,19 +203,19 @@ namespace osu.Game.Tests.Visual.UserInterface
 
         private class TestDifficultyCalculator : DifficultyCalculator
         {
-            public TestDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap)
-                : base(ruleset, beatmap)
+            public TestDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap, IEnumerable<Mod> mods)
+                : base(ruleset, beatmap, mods)
             {
             }
 
-            protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills, double clockRate)
-                => new DifficultyAttributes(mods, mods.OfType<TestMod>().SingleOrDefault()?.Difficulty.Value ?? 0);
+            protected override DifficultyAttributes CreateDifficultyAttributes()
+                => new DifficultyAttributes(Mods, Mods.OfType<TestMod>().SingleOrDefault()?.Difficulty.Value ?? 0);
 
-            protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
+            protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects()
                 => Array.Empty<DifficultyHitObject>();
 
-            protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
-                => Array.Empty<Skill>();
+            public override int Version => 0;
+            protected override Skill[] Skills => [];
         }
 
         private class TestPerformanceCalculator : PerformanceCalculator

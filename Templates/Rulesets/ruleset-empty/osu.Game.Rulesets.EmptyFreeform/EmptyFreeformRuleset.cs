@@ -31,8 +31,8 @@ namespace osu.Game.Rulesets.EmptyFreeform
         public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) =>
             new EmptyFreeformBeatmapConverter(beatmap, this);
 
-        public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) =>
-            new EmptyFreeformDifficultyCalculator(RulesetInfo, beatmap);
+        public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap, IEnumerable<Mod> mods) =>
+            new EmptyFreeformDifficultyCalculator(RulesetInfo, beatmap, mods);
 
         public override IEnumerable<Mod> GetModsFor(ModType type)
         {
