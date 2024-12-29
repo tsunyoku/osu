@@ -5,11 +5,23 @@ using System;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
 using System.Linq;
+using osu.Framework.Utils;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
     public abstract class OsuStrainSkill : StrainSkill
     {
+        /// <summary>
+        /// The duration strain reduction will apply to.
+        /// We assume that the first seconds of the map are always easier than calculated difficulty due to them being free to retry.
+        /// </summary>
+        protected virtual int ReducedDuration => 30;
+
+        /// <summary>
+        /// The baseline multiplier applied to the section with the biggest strain.
+        /// </summary>
+        protected virtual double ReducedStrainBaseline => 0.75;
+
         protected OsuStrainSkill(Mod[] mods)
             : base(mods)
         {
@@ -24,9 +36,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             // These sections will not contribute to the difficulty.
             var peaks = GetCurrentStrainPeaks().Where(p => p > 0);
 
+            var strains = peaks.ToList();
+
+            double reducedSectionCount = ReducedDuration * 1000.0 / SectionLength;
+
+            for (int i = 0; i < Math.Min(strains.Count, reducedSectionCount); i++)
+            {
+                double scale = Math.Log10(Interpolation.Lerp(1, 10, Math.Clamp((float)i / reducedSectionCount, 0, 1)));
+                strains[i] *= Interpolation.Lerp(ReducedStrainBaseline, 1.0, scale);
+            }
+
             // Difficulty is the weighted sum of the highest strains from every section.
             // We're sorting from highest to lowest strain.
-            foreach (double strain in peaks.OrderDescending())
+            foreach (double strain in strains.OrderDescending())
             {
                 difficulty += strain * weight;
                 weight *= DecayWeight;
