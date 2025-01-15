@@ -419,8 +419,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             const double scale = 50;
             double adjustedSpeedValue = scale * (Math.Log((speedValue - excessSpeedDifficultyCutoff) / scale + 1) + excessSpeedDifficultyCutoff / scale);
 
-            // 200 UR and less are considered tapped correctly to ensure that normal scores will be punished as little as possible
-            double lerp = 1 - Math.Clamp((speedDeviation.Value - 20) / (24 - 20), 0, 1);
+            // 220 UR and less are considered tapped correctly to ensure that normal scores will be punished as little as possible
+            double lerp = 1 - DifficultyCalculationUtils.ReverseLerp(speedDeviation.Value, 22.0, 27.0);
             adjustedSpeedValue = double.Lerp(adjustedSpeedValue, speedValue, lerp);
 
             return adjustedSpeedValue / speedValue;
