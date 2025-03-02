@@ -215,7 +215,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             else if (approachRate < 8.0)
                 approachRateFactor = 0.05 * (8.0 - approachRate);
 
-            if (score.Mods.Any(h => h is OsuModRelax))
+            if (score.Mods.Any(h => h is OsuModRelax) && approachRate <= 11.0)
                 approachRateFactor = 0.0;
 
             aimValue *= 1.0 + approachRateFactor * lengthBonus; // Buff for longer maps with high AR.
