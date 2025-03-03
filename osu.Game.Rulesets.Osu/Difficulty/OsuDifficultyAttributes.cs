@@ -60,11 +60,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         public double SpeedDifficultStrainCount { get; set; }
 
         /// <summary>
-        /// The beatmap's drain rate. This doesn't scale with rate-adjusting mods.
-        /// </summary>
-        public double DrainRate { get; set; }
-
-        /// <summary>
         /// The number of hitcircles in the beatmap.
         /// </summary>
         public int HitCircleCount { get; set; }
@@ -112,7 +107,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             SpeedDifficultStrainCount = values[ATTRIB_ID_SPEED_DIFFICULT_STRAIN_COUNT];
             SpeedNoteCount = values[ATTRIB_ID_SPEED_NOTE_COUNT];
             AimDifficultSliderCount = values[ATTRIB_ID_AIM_DIFFICULT_SLIDER_COUNT];
-            DrainRate = onlineInfo.DrainRate;
             HitCircleCount = onlineInfo.CircleCount;
             SliderCount = onlineInfo.SliderCount;
             SpinnerCount = onlineInfo.SpinnerCount;
