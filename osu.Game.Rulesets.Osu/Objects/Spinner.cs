@@ -56,6 +56,8 @@ namespace osu.Game.Rulesets.Osu.Objects
         /// </summary>
         public int MaximumBonusSpins { get; protected set; } = 1;
 
+        public int LegacySpinsRequired { get; protected set; } = 1;
+
         public override Vector2 StackOffset => Vector2.Zero;
 
         protected override void ApplyDefaultsToSelf(ControlPointInfo controlPointInfo, IBeatmapDifficultyInfo difficulty)
@@ -73,7 +75,10 @@ namespace osu.Game.Rulesets.Osu.Objects
             // Allow a 0.1ms floating point precision error in the calculation of the duration.
             const double duration_error = 0.0001;
 
+            double difficultyMinRps = IBeatmapDifficultyInfo.DifficultyRange(difficulty.OverallDifficulty, 3, 5, 7.5);
+
             SpinsRequired = (int)(minRps * secondsDuration + duration_error);
+            LegacySpinsRequired = (int)(secondsDuration * difficultyMinRps);
             MaximumBonusSpins = Math.Max(0, (int)(maxRps * secondsDuration + duration_error) - SpinsRequired - bonus_spins_gap);
         }
 

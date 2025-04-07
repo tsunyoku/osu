@@ -120,12 +120,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         {
             List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
 
+            bool isLegacy = PlayableMods.Any(m => m is OsuModClassic);
+
             // The first jump is formed by the first two hitobjects of the map.
             // If the map has less than two OsuHitObjects, the enumerator will not return anything.
             for (int i = 1; i < beatmap.HitObjects.Count; i++)
             {
                 var lastLast = i > 1 ? beatmap.HitObjects[i - 2] : null;
-                objects.Add(new OsuDifficultyHitObject(beatmap.HitObjects[i], beatmap.HitObjects[i - 1], lastLast, clockRate, objects, objects.Count));
+                objects.Add(new OsuDifficultyHitObject(beatmap.HitObjects[i], beatmap.HitObjects[i - 1], lastLast, clockRate, objects, objects.Count, isLegacy));
             }
 
             return objects;

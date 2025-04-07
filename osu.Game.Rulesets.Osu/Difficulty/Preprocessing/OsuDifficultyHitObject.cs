@@ -87,18 +87,25 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         public double HitWindowGreat { get; private set; }
 
         /// <summary>
+        /// The amount of spins required to not miss.
+        /// </summary>
+        public double? SpinsRequired { get; private set; }
+
+        /// <summary>
         /// The duration of the spinner associated with this <see cref="OsuDifficultyHitObject"/> for <see cref="Spinner"/> objects, accounted for clockrate.
         /// </summary>
         public double? SpinnerDuration { get; private set; }
 
         private readonly OsuHitObject? lastLastObject;
         private readonly OsuHitObject lastObject;
+        private readonly bool isLegacy;
 
-        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject? lastLastObject, double clockRate, List<DifficultyHitObject> objects, int index)
+        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject? lastLastObject, double clockRate, List<DifficultyHitObject> objects, int index, bool isLegacy)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             this.lastLastObject = lastLastObject as OsuHitObject;
             this.lastObject = (OsuHitObject)lastObject;
+            this.isLegacy = isLegacy;
 
             // Capped to 25ms to prevent difficulty calculation breaking from simultaneous objects.
             StrainTime = Math.Max(DeltaTime, MIN_DELTA_TIME);
@@ -113,7 +120,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             }
 
             if (BaseObject is Spinner spinner)
+            {
                 SpinnerDuration = spinner.Duration / clockRate;
+                SpinsRequired = isLegacy ? spinner.LegacySpinsRequired : spinner.SpinsRequired;
+            }
 
             setDistances(clockRate);
         }
@@ -176,7 +186,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             }
 
             // We don't need to calculate either angle or distance when one of the last->curr objects is a spinner
-            if (BaseObject is Spinner || (lastObject is Spinner spinner && spinner.SpinsRequired <= 0))
+            int? lastSpinsRequired = null;
+
+            if (lastObject is Spinner spinner)
+                lastSpinsRequired = isLegacy ? spinner.LegacySpinsRequired : spinner.SpinsRequired;
+
+            if (BaseObject is Spinner || (lastSpinsRequired.HasValue && lastSpinsRequired <= 0))
                 return;
 
             // We will scale distances by this factor, so we can assume a uniform CircleSize among beatmaps.
