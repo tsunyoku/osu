@@ -7,6 +7,7 @@ using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
+using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Objects;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
@@ -17,11 +18,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     public class Aim : OsuStrainSkill
     {
         public readonly bool IncludeSliders;
+        private readonly bool hasSpunOut;
 
         public Aim(Mod[] mods, bool includeSliders)
             : base(mods)
         {
             IncludeSliders = includeSliders;
+            hasSpunOut = mods.Any(m => m is OsuModSpunOut);
         }
 
         private double currentStrain;
@@ -38,7 +41,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected override double StrainValueAt(DifficultyHitObject current)
         {
             currentStrain *= strainDecay(current.DeltaTime);
-            currentStrain += AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders) * skillMultiplier;
+            currentStrain += AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders, hasSpunOut) * skillMultiplier;
 
             if (current.BaseObject is Slider)
             {
