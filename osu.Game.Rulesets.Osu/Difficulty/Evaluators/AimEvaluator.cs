@@ -26,16 +26,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// <item><description>and slider difficulty.</description></item>
         /// </list>
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current, bool withSliderTravelDistance, bool hasSpunOut)
+        public static double EvaluateDifficultyOf(DifficultyHitObject current, bool withSliderTravelDistance, bool withSpinnerDifficulty)
         {
             if (current.BaseObject is Spinner)
-                return SpinnerAimEvaluator.EvaluateDifficultyOf(current, hasSpunOut);
+            {
+                return withSpinnerDifficulty
+                    ? SpinnerAimEvaluator.EvaluateDifficultyOf(current)
+                    : 0;
+            }
 
-            if (current.Index <= 1 || (current.Previous(0).BaseObject is Spinner spinner && (spinner.Duration <= 0 || hasSpunOut)))
+            var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
+
+            if (current.Index <= 1 || (osuLastObj.BaseObject is Spinner spinner && (spinner.Duration <= 0 || !withSpinnerDifficulty)))
                 return 0;
 
             var osuCurrObj = (OsuDifficultyHitObject)current;
-            var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
             var osuLastLastObj = (OsuDifficultyHitObject)current.Previous(1);
 
             const int radius = OsuDifficultyHitObject.NORMALISED_RADIUS;

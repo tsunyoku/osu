@@ -7,7 +7,6 @@ using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
-using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Objects;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
@@ -18,13 +17,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     public class Aim : OsuStrainSkill
     {
         public readonly bool IncludeSliders;
-        private readonly bool hasSpunOut;
+        public readonly bool IncludeSpinners;
 
-        public Aim(Mod[] mods, bool includeSliders)
+        public Aim(Mod[] mods, bool includeSliders, bool includeSpinners)
             : base(mods)
         {
             IncludeSliders = includeSliders;
-            hasSpunOut = mods.Any(m => m is OsuModSpunOut);
+            IncludeSpinners = includeSpinners;
         }
 
         private double currentStrain;
@@ -33,6 +32,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double strainDecayBase => 0.15;
 
         private readonly List<double> sliderStrains = new List<double>();
+        private readonly List<double> spinnerStrains = new List<double>();
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
@@ -41,11 +41,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected override double StrainValueAt(DifficultyHitObject current)
         {
             currentStrain *= strainDecay(current.DeltaTime);
-            currentStrain += AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders, hasSpunOut) * skillMultiplier;
+            currentStrain += AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders, IncludeSpinners) * skillMultiplier;
 
             if (current.BaseObject is Slider)
             {
                 sliderStrains.Add(currentStrain);
+            }
+
+            if (current.BaseObject is Spinner)
+            {
+                spinnerStrains.Add(currentStrain);
             }
 
             return currentStrain;
@@ -61,6 +66,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 return 0;
 
             return sliderStrains.Sum(strain => 1.0 / (1.0 + Math.Exp(-(strain / maxSliderStrain * 12.0 - 6.0))));
+        }
+
+        public double GetDifficultSpinners()
+        {
+            if (spinnerStrains.Count == 0)
+                return 0;
+
+            double maxSpinnerStrain = spinnerStrains.Max();
+            if (maxSpinnerStrain == 0)
+                return 0;
+
+            return spinnerStrains.Sum(strain => 1.0 / (1.0 + Math.Exp(-(strain / maxSpinnerStrain * 12.0 - 6.0))));
         }
     }
 }

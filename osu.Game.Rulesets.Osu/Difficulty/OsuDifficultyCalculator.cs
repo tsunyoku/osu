@@ -34,14 +34,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (beatmap.HitObjects.Count == 0)
                 return new OsuDifficultyAttributes { Mods = mods };
 
-            var aim = skills.OfType<Aim>().Single(a => a.IncludeSliders);
+            var aim = skills.OfType<Aim>().First(a => a.IncludeSliders);
             double aimRating = Math.Sqrt(aim.DifficultyValue()) * difficulty_multiplier;
             double aimDifficultyStrainCount = aim.CountTopWeightedStrains();
             double difficultSliders = aim.GetDifficultSliders();
+            double difficultSpinners = aim.GetDifficultSpinners();
 
             var aimWithoutSliders = skills.OfType<Aim>().Single(a => !a.IncludeSliders);
             double aimRatingNoSliders = Math.Sqrt(aimWithoutSliders.DifficultyValue()) * difficulty_multiplier;
             double sliderFactor = aimRating > 0 ? aimRatingNoSliders / aimRating : 1;
+
+            var aimWithoutSpinners = skills.OfType<Aim>().First(a => !a.IncludeSpinners && a.IncludeSliders);
+            double aimRatingNoSpinners = Math.Sqrt(aimWithoutSpinners.DifficultyValue()) * difficulty_multiplier;
+            double spinnerFactor = aimRating > 0 ? aimRatingNoSpinners / aimRating : 1;
 
             var speed = skills.OfType<Speed>().Single();
             double speedRating = Math.Sqrt(speed.DifficultyValue()) * difficulty_multiplier;
@@ -100,10 +105,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 Mods = mods,
                 AimDifficulty = aimRating,
                 AimDifficultSliderCount = difficultSliders,
+                AimDifficultSpinnerCount = difficultSpinners,
                 SpeedDifficulty = speedRating,
                 SpeedNoteCount = speedNotes,
                 FlashlightDifficulty = flashlightRating,
                 SliderFactor = sliderFactor,
+                SpinnerFactor = spinnerFactor,
                 AimDifficultStrainCount = aimDifficultyStrainCount,
                 SpeedDifficultStrainCount = speedDifficultyStrainCount,
                 DrainRate = drainRate,
@@ -135,10 +142,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
         {
+            bool spunOut = mods.Any(m => m is OsuModSpunOut);
+
             var skills = new List<Skill>
             {
-                new Aim(mods, true),
-                new Aim(mods, false),
+                new Aim(mods, true, !spunOut),
+                new Aim(mods, false, !spunOut),
+                new Aim(mods, true, false),
                 new Speed(mods)
             };
 
@@ -156,7 +166,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             new OsuModEasy(),
             new OsuModHardRock(),
             new OsuModFlashlight(),
-            new MultiMod(new OsuModFlashlight(), new OsuModHidden())
+            new MultiMod(new OsuModFlashlight(), new OsuModHidden()),
+            new OsuModSpunOut()
         };
     }
 }

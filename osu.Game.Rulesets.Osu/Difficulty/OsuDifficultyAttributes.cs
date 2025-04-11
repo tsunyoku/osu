@@ -27,6 +27,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         public double AimDifficultSliderCount { get; set; }
 
         /// <summary>
+        /// The number of <see cref="Spinner"/>s weighted by difficulty.
+        /// </summary>
+        [JsonProperty("aim_difficult_spinner_count")]
+        public double AimDifficultSpinnerCount { get; set; }
+
+        /// <summary>
         /// The difficulty corresponding to the speed skill.
         /// </summary>
         [JsonProperty("speed_difficulty")]
@@ -52,6 +58,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         /// </summary>
         [JsonProperty("slider_factor")]
         public double SliderFactor { get; set; }
+
+        /// <summary>
+        /// Describes how much of <see cref="AimDifficulty"/> is contributed to by hitcircles or spinners.
+        /// A value closer to 1.0 indicates most of <see cref="AimDifficulty"/> is contributed by hitcircles.
+        /// A value closer to 0.0 indicates most of <see cref="AimDifficulty"/> is contributed by spinners.
+        /// </summary>
+        [JsonProperty("spinner_factor")]
+        public double SpinnerFactor { get; set; }
 
         [JsonProperty("aim_difficult_strain_count")]
         public double AimDifficultStrainCount { get; set; }

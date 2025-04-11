@@ -18,9 +18,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// <item><description>and the duration of the spinner.</description></item>
         /// </list>
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current, bool hasSpunOut)
+        public static double EvaluateDifficultyOf(DifficultyHitObject current)
         {
-            if (current.BaseObject is not Spinner spinner || hasSpunOut || spinner.Duration <= 0)
+            if (current.BaseObject is not Spinner spinner || spinner.Duration <= 0)
                 return 0;
 
             var osuCurrent = (OsuDifficultyHitObject)current;

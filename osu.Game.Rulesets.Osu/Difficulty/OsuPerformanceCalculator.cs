@@ -198,6 +198,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 aimDifficulty *= sliderNerfFactor;
             }
 
+            if (attributes.SpinnerCount > 0 && attributes.AimDifficultSpinnerCount > 0 && !score.Mods.Any(m => m is OsuModSpunOut))
+            {
+                // We assume that as many of the imperfect hits were attributed to the spinners as possible.
+                // This works well as we're scaling the nerf by how much the spinners impacted difficulty
+                // So this won't cause nerfs in cases where the spinners were insignificant, and will scale the more important they become.
+                // We have no alternative metrics for this regardless of classic, since we're not interested in awarding spin bonuses.
+                double estimatedImproperlyFollowedDifficultSpinners = Math.Min(totalImperfectHits, attributes.AimDifficultSpinnerCount);
+
+                double spinnerNerfFactor = (1 - attributes.SpinnerFactor)
+                                           * Math.Pow(1 - estimatedImproperlyFollowedDifficultSpinners / attributes.AimDifficultSpinnerCount, 3)
+                                           + attributes.SpinnerFactor;
+
+                aimDifficulty *= spinnerNerfFactor;
+            }
+
             double aimValue = OsuStrainSkill.DifficultyToPerformance(aimDifficulty);
 
             double lengthBonus = 0.95 + 0.4 * Math.Min(1.0, totalHits / 2000.0) +
