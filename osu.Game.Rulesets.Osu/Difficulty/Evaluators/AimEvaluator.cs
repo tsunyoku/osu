@@ -35,12 +35,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     : 0;
             }
 
-            var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
-
-            if (current.Index <= 1 || (osuLastObj.BaseObject is Spinner spinner && (spinner.Duration <= 0 || !withSpinnerDifficulty)))
+            if (current.Index <= 1 || (current.Previous(0).BaseObject is Spinner spinner && (spinner.Duration <= 0 || !withSpinnerDifficulty)))
                 return 0;
 
             var osuCurrObj = (OsuDifficultyHitObject)current;
+            var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
             var osuLastLastObj = (OsuDifficultyHitObject)current.Previous(1);
 
             const int radius = OsuDifficultyHitObject.NORMALISED_RADIUS;

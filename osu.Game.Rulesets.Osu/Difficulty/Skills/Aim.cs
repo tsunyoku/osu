@@ -47,8 +47,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             {
                 sliderStrains.Add(currentStrain);
             }
-
-            if (current.BaseObject is Spinner)
+            else if (current.BaseObject is Spinner)
             {
                 spinnerStrains.Add(currentStrain);
             }
