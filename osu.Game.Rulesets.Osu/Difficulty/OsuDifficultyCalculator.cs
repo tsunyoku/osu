@@ -123,11 +123,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             return attributes;
         }
 
-        protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
+        protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods, double clockRate)
         {
             List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
 
-            bool isLegacy = PlayableMods.Any(m => m is OsuModClassic);
+            bool isLegacy = mods.Any(m => m is OsuModClassic);
 
             // The first jump is formed by the first two hitobjects of the map.
             // If the map has less than two OsuHitObjects, the enumerator will not return anything.
