@@ -8,6 +8,7 @@ using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
+using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Difficulty.Skills;
@@ -53,8 +54,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double speedNotes = speed.RelevantNoteCount();
 
-            double aimDifficultStrainCount = aim.CountTopWeightedStrains();
-            double speedDifficultStrainCount = speed.CountTopWeightedStrains();
+            double aimDifficultyValue = aim.DifficultyValue();
+            double speedDifficultyValue = speed.DifficultyValue();
+
+            double aimDifficultStrainCount = StrainUtils.CountTopWeightedStrains(aim.ObjectStrains, aimDifficultyValue);
+            double speedDifficultStrainCount = StrainUtils.CountTopWeightedStrains(speed.ObjectStrains, speedDifficultyValue);
 
             double difficultSliders = aim.GetDifficultSliders();
 
@@ -76,9 +80,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double drainRate = beatmap.Difficulty.DrainRate;
 
-            double aimRating = computeAimRating(aim.DifficultyValue(), mods, totalHits, approachRate, overallDifficulty);
+            double aimRating = computeAimRating(aimDifficultyValue, mods, totalHits, approachRate, overallDifficulty);
             double aimRatingNoSliders = computeAimRating(aimWithoutSliders.DifficultyValue(), mods, totalHits, approachRate, overallDifficulty);
-            double speedRating = computeSpeedRating(speed.DifficultyValue(), mods, totalHits, approachRate, overallDifficulty);
+            double speedRating = computeSpeedRating(speedDifficultyValue, mods, totalHits, approachRate, overallDifficulty);
 
             double flashlightRating = 0.0;
 
