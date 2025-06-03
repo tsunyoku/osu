@@ -31,7 +31,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         public override double DifficultyValue()
         {
             double difficulty = 0;
-            double weight = 1;
 
             // Sections with 0 strain are excluded to avoid worst-case time complexity of the following sort (e.g. /b/2351871).
             // These sections will not contribute to the difficulty.
@@ -46,12 +45,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 strains[i] *= Interpolation.Lerp(ReducedStrainBaseline, 1.0, scale);
             }
 
+            int index = 0;
+
             // Difficulty is the weighted sum of the highest strains from every section.
             // We're sorting from highest to lowest strain.
             foreach (double strain in strains.OrderDescending())
             {
+                // Use a harmonic sum for note which effectively buffs maps with more notes, especially if note difficulties are consistent.
+                // Constants are arbitrary and give good values.
+                double weight = 1.6 * ((1 + (8.5 / (1 + index))) / (index + 1 + (8.5 / (1 + index))));
+
                 difficulty += strain * weight;
-                weight *= DecayWeight;
+                index++;
             }
 
             return difficulty;
