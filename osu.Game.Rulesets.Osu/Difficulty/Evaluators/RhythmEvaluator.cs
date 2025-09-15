@@ -21,7 +21,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// <summary>
         /// Calculates a rhythm multiplier for the difficulty of the tap associated with historic data of the current <see cref="OsuDifficultyHitObject"/>.
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current)
+        public static double EvaluateDifficultyOf(DifficultyHitObject current, bool nerfDoubletappablePatterns)
         {
             if (current.BaseObject is Spinner)
                 return 0;
@@ -138,7 +138,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                         // scale down the difficulty if the object is doubletappable
                         double doubletapness = prevObj.GetDoubletapness(currObj);
-                        effectiveRatio *= 1 - doubletapness * 0.75;
+
+                        if (nerfDoubletappablePatterns)
+                            effectiveRatio *= 1 - doubletapness * 0.75;
 
                         rhythmComplexitySum += Math.Sqrt(effectiveRatio * startRatio) * currHistoricalDecay;
 
@@ -176,7 +178,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             }
 
             double rhythmDifficulty = Math.Sqrt(4 + rhythmComplexitySum * rhythm_overall_multiplier) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though)
-            rhythmDifficulty *= 1 - currentOsuObject.GetDoubletapness((OsuDifficultyHitObject)current.Next(0));
+
+            if (nerfDoubletappablePatterns)
+                rhythmDifficulty *= 1 - currentOsuObject.GetDoubletapness((OsuDifficultyHitObject)current.Next(0));
 
             return rhythmDifficulty;
         }

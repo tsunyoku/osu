@@ -54,6 +54,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         public double SliderFactor { get; set; }
 
         /// <summary>
+        /// Describes how much of <see cref="SpeedDifficulty"/> is contributed to by doubletappable circles.
+        /// </summary>
+        [JsonProperty("double_tap_factor")]
+        public double DoubleTapFactor { get; set; }
+
+        /// <summary>
         /// Describes how much of <see cref="AimDifficultStrainCount"/> is contributed to by hitcircles or sliders
         /// A value closer to 0.0 indicates most of <see cref="AimDifficultStrainCount"/> is contributed by hitcircles
         /// A value closer to Infinity indicates most of <see cref="AimDifficultStrainCount"/> is contributed by sliders

@@ -28,7 +28,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// <item><description>and how easily they can be cheesed.</description></item>
         /// </list>
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current, IReadOnlyList<Mod> mods)
+        public static double EvaluateDifficultyOf(DifficultyHitObject current, IReadOnlyList<Mod> mods, bool nerfDoubletappablePatterns)
         {
             if (current.BaseObject is Spinner)
                 return 0;
@@ -70,7 +70,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             double difficulty = (1 + speedBonus + distanceBonus) * 1000 / strainTime;
 
             // Apply penalty if there's doubletappable doubles
-            return difficulty * doubletapness;
+            return difficulty * (nerfDoubletappablePatterns ? doubletapness : 1.0);
         }
     }
 }

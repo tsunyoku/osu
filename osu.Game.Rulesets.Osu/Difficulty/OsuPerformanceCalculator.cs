@@ -263,6 +263,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double relevantCountMeh = Math.Max(0, countMeh - Math.Max(0, relevantTotalDiff - countGreat - countOk));
             double relevantAccuracy = attributes.SpeedNoteCount == 0 ? 0 : (relevantCountGreat * 6.0 + relevantCountOk * 2.0 + relevantCountMeh) / (attributes.SpeedNoteCount * 6.0);
 
+            double improperlyTappedNotes = relevantCountGreat + relevantCountOk + relevantCountMeh;
+            double doubletapNerfFactor = (1 - attributes.DoubleTapFactor) * Math.Pow(1 - improperlyTappedNotes / attributes.SpeedNoteCount, 3) + attributes.DoubleTapFactor;
+            speedValue *= doubletapNerfFactor;
+
             // Scale the speed value with accuracy and OD.
             speedValue *= Math.Pow((accuracy + relevantAccuracy) / 2.0, (14.5 - overallDifficulty) / 2);
 
