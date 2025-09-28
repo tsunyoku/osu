@@ -162,9 +162,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     (OsuHitObject)osuLast3Obj.BaseObject);
             }
 
-            aimStrain *= calculateSmallJumpNerf(osuCurrObj);
-            aimStrain *= calculateBigJumpBuff(osuCurrObj);
-
             aimStrain *= angleRepetitionNerf;
 
             aimStrain += wideAngleBonus * wide_angle_multiplier;
@@ -219,38 +216,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         }
 
         private static double calcWideAngleBonus(double angle) => DifficultyCalculationUtils.Smoothstep(angle, double.DegreesToRadians(40), double.DegreesToRadians(140));
-
-        /// <summary>
-        /// We apply nerf to jumps within ~1-3.5 distance (with peak at 2.2) depending on BPM.
-        /// Graphs: https://www.desmos.com/calculator/lbwtkv1qom
-        /// </summary>
-        private static double calculateSmallJumpNerf(OsuDifficultyHitObject curr)
-        {
-            var effectiveBPM = 30 / (curr.AdjustedDeltaTime / 1000.0);
-
-            // this applies nerf up to 300 bpm and starts deminishing it at ~200 bpm
-            var bpmCutoff = DifficultyCalculationUtils.Logistic(-((255 - effectiveBPM) / 10.0));
-
-            var distanceNerf = Math.Exp(-Math.Pow(((curr.LazyJumpDistance / OsuDifficultyHitObject.NORMALISED_DIAMETER) - 2.2) / 0.7, 2.0));
-
-            return 1.0 - distanceNerf * bpmCutoff * 0.25;
-        }
-
-        /// <summary>
-        /// We apply buff to jumps with distance starting from ~4 on low BPMs.
-        /// Graphs: https://www.desmos.com/calculator/fmewz0foql
-        /// </summary>
-        private static double calculateBigJumpBuff(OsuDifficultyHitObject curr)
-        {
-            var effectiveBPM = 30 / (curr.AdjustedDeltaTime / 1000.0);
-
-            // this applies buff up until ~250 bpm
-            var bpmCutoff = DifficultyCalculationUtils.Logistic(-((210 - effectiveBPM) / 8.0));
-
-            var distanceBuff = DifficultyCalculationUtils.Logistic(-(((curr.LazyJumpDistance / OsuDifficultyHitObject.NORMALISED_DIAMETER) - 6.0) / 0.5));
-
-            return 1.0 + distanceBuff * bpmCutoff * 0.5;
-        }
 
         /// <summary>
         /// We apply a nerf to big jumps where second-last or fourth-last and current objects are close.
