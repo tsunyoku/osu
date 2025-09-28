@@ -40,9 +40,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (mods.Any(m => m is OsuModTouchDevice))
                 aimRating = Math.Pow(aimRating, 0.8);
 
-            if (mods.Any(m => m is OsuModRelax))
-                aimRating *= 0.9;
-
             if (mods.Any(m => m is OsuModMagnetised))
             {
                 float magnetisedStrength = mods.OfType<OsuModMagnetised>().First().AttractionStrength.Value;
@@ -59,9 +56,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 approachRateFactor = 0.3 * (approachRate - 10.33);
             else if (approachRate < 8.0)
                 approachRateFactor = 0.05 * (8.0 - approachRate);
-
-            if (mods.Any(h => h is OsuModRelax))
-                approachRateFactor = 0.0;
 
             ratingMultiplier += approachRateFactor * approachRateLengthBonus; // Buff for longer maps with high AR.
 
