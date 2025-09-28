@@ -11,17 +11,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 {
     public class OsuRatingCalculator
     {
-        private const double difficulty_multiplier = 0.0675;
+        private const double difficulty_multiplier = 0.0655;
 
         private readonly Mod[] mods;
         private readonly int totalHits;
         private readonly double overallDifficulty;
+        private readonly double aimRelevantObjectCount;
 
-        public OsuRatingCalculator(Mod[] mods, int totalHits, double overallDifficulty)
+        public OsuRatingCalculator(Mod[] mods, int totalHits, double overallDifficulty, double aimRelevantObjectCount)
         {
             this.mods = mods;
             this.totalHits = totalHits;
             this.overallDifficulty = overallDifficulty;
+            this.aimRelevantObjectCount = aimRelevantObjectCount;
         }
 
         public double ComputeAimRating(double aimDifficultyValue)
@@ -40,7 +42,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 aimRating *= 1.0 - magnetisedStrength;
             }
 
-            return aimRating;
+            double ratingMultiplier = 1.0;
+
+            double aimLengthBonus = 1.0 + Math.Min(1.0, aimRelevantObjectCount / 300.0) +
+                                    (aimRelevantObjectCount > 300.0 ? 2.0 * Math.Log10(aimRelevantObjectCount / 300.0) : 0);
+
+            ratingMultiplier *= aimLengthBonus;
+
+            return aimRating * Math.Cbrt(ratingMultiplier);
         }
 
         public double ComputeSpeedRating(double speedDifficultyValue)

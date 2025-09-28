@@ -95,7 +95,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double greatsWithCheesing = aim.GetInaccuraciesWithCheesing();
 
-            var osuRatingCalculator = new OsuRatingCalculator(mods, totalHits, overallDifficulty);
+            double aimRelevantObjectCount = aim.CountRelevantObjects();
+
+            var osuRatingCalculator = new OsuRatingCalculator(mods, totalHits, overallDifficulty, aimRelevantObjectCount);
 
             double aimRating = osuRatingCalculator.ComputeAimRating(aimDifficultyValue);
             double speedRating = osuRatingCalculator.ComputeSpeedRating(speedDifficultyValue);
