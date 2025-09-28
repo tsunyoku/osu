@@ -32,28 +32,32 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double maxStrain = 0;
         private double currentStrain;
 
-        private double currentAgilityStrain;
         private double aimMultiplier => 0.98;
         private double snapMultiplier => 31.3;
         private double flowMultiplier => 8;
         private double agilityMultiplier => 0.25;
         private double strainDecayBase => 0.15;
-        private double agilityStrainDecayBase => 0.1;
 
         private readonly List<double> sliderStrains = new List<double>();
+        private readonly List<(double Time, double Diff)> previousStrains = new List<(double Time, double Diff)>();
+
+        private const double backwards_strain_influence = 1000;
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
-        private double agilityStrainDecay(double ms) => Math.Pow(agilityStrainDecayBase, ms / 1000);
+        protected override double CalculateInitialStrain(double offset, DifficultyHitObject current)
+        {
+            var osuCurrent = (OsuDifficultyHitObject)current;
 
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
+            double strain = getCurrentStrainValue(offset);
+
+            return strain;
+        }
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            currentStrain *= strainDecay(current.DeltaTime);
-            currentAgilityStrain *= agilityStrainDecay(current.DeltaTime);
-
             double currentDifficulty;
+
             double snapDifficulty = AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders, Cheese);
             double flowDifficulty = FlowAimEvaluator.EvaluateDifficultyOf(current);
             double agilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(current);
@@ -63,14 +67,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             if (isFlow)
             {
                 currentDifficulty = flowDifficulty * flowMultiplier;
-                currentStrain += currentDifficulty;
             }
             else
             {
-                currentDifficulty = snapDifficulty * snapMultiplier;
-                currentAgilityStrain += agilityDifficulty * agilityMultiplier;
-                currentStrain += currentDifficulty + currentAgilityStrain;
+                currentDifficulty = snapDifficulty * snapMultiplier + agilityDifficulty * agilityDifficulty;
             }
+
+            currentStrain = getCurrentStrainValue(current.StartTime) * 2.25;
+            previousStrains.Add((current.StartTime, currentDifficulty));
 
             if (current.BaseObject is Slider)
                 sliderStrains.Add(currentStrain);
@@ -79,7 +83,57 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             if (currentStrain > maxStrain)
                 maxStrain = currentStrain;
 
-            return currentStrain * aimMultiplier;
+            return (currentStrain + currentDifficulty) * aimMultiplier;
+        }
+
+        private double getCurrentStrainValue(double endTime)
+        {
+            if (previousStrains.Count < 2)
+                return 0;
+
+            double sum = 0;
+
+            double highestNoteVal = 0;
+            double prevDeltaTime = 0;
+
+            int index = 1;
+
+            while (index < previousStrains.Count)
+            {
+                double prevTime = previousStrains[index - 1].Time;
+                double currTime = previousStrains[index].Time;
+
+                double deltaTime = currTime - prevTime;
+                double prevDifficulty = previousStrains[index - 1].Diff;
+
+                // How much of the current deltaTime does not fall under the backwards strain influence value.
+                double startTimeOffset = Math.Max(0, endTime - prevTime - backwards_strain_influence);
+
+                // If the deltaTime doesn't fall into the backwards strain influence value at all, we can remove its corresponding difficulty.
+                // We don't iterate index because the list moves backwards.
+                if (startTimeOffset > deltaTime)
+                {
+                    previousStrains.RemoveAt(0);
+
+                    continue;
+                }
+
+                highestNoteVal = Math.Max(prevDifficulty, strainDecay(prevDeltaTime));
+                prevDeltaTime = deltaTime;
+
+                sum += highestNoteVal * (strainDecayAntiderivative(startTimeOffset) - strainDecayAntiderivative(deltaTime));
+
+                index++;
+            }
+
+            // CalculateInitialStrain stuff
+            highestNoteVal = Math.Max(previousStrains.Last().Diff, highestNoteVal);
+            double lastTime = previousStrains.Last().Time;
+            sum += (strainDecayAntiderivative(0) - strainDecayAntiderivative(endTime - lastTime)) * highestNoteVal;
+
+            return sum;
+
+            double strainDecayAntiderivative(double t) => Math.Pow(strainDecayBase, t / 1000) / Math.Log(1.0 / strainDecayBase);
         }
 
         public double GetDifficultSliders()
