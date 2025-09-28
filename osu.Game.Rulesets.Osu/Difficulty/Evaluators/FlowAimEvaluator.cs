@@ -49,7 +49,7 @@ public static class FlowAimEvaluator
 
             difficulty *= osuCurrObj.SmallCircleBonus;
 
-            return difficulty * 0.03;
+            return difficulty * 0.02;
         }
 
         private static double directionChange(OsuDifficultyHitObject osuCurrObj, OsuDifficultyHitObject osuPrevObj)
