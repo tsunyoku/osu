@@ -13,10 +13,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     public abstract class OsuVariableLengthStrainSkill : VariableLengthStrainSkill
     {
         /// <summary>
-        /// The number of sections with the highest strains, which the peak strain reductions will apply to.
-        /// This is done in order to decrease their impact on the overall difficulty of the map for this skill.
+        /// The duration strain reduction will apply to.
+        /// We assume that the first seconds of the map are always easier than calculated difficulty due to them being free to retry.
         /// </summary>
-        protected virtual int ReducedSectionCount => 10;
+        protected virtual int ReducedDuration => 40;
 
         /// <summary>
         /// The baseline multiplier applied to the section with the biggest strain.
@@ -44,16 +44,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             const int chunk_size = 20;
             int strainsToRemove = 0;
 
+            double reducedSectionCount = ReducedDuration * 1000.0 / MaxSectionLength;
+
             // We are reducing the highest strains first to account for extreme difficulty spikes
             // Split the strain into 20ms chunks to try to mitigate inconsistencies caused by reducing strains
-            while (strains.Count > strainsToRemove && time / MaxSectionLength < ReducedSectionCount)
+            while (strains.Count > strainsToRemove && time < ReducedDuration)
             {
                 StrainPeak strain = strains[strainsToRemove];
                 double addedTime = 0;
 
                 while (addedTime < strain.SectionLength)
                 {
-                    double scale = Math.Log10(Interpolation.Lerp(1, 10, Math.Clamp((time + addedTime) / MaxSectionLength / ReducedSectionCount, 0, 1)));
+                    double scale = Math.Log10(Interpolation.Lerp(1, 10, Math.Clamp((time + addedTime) / MaxSectionLength / reducedSectionCount, 0, 1)));
 
                     strains.Add(new StrainPeak(strain.Value * Interpolation.Lerp(ReducedStrainBaseline, 1.0, scale), Math.Min(chunk_size, strain.SectionLength - addedTime)));
                     addedTime += chunk_size;
