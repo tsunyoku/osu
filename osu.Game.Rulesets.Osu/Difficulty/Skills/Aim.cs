@@ -31,14 +31,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double inaccuraciesWhileCheesing = 0;
         private double maxStrain = 0;
         private double currentStrain;
-        private double currentAgilityStrain;
 
         private double aimMultiplier => 0.98;
         private double snapMultiplier => 31.3;
         private double flowMultiplier => 8;
         private double agilityMultiplier => 0.25;
         private double strainDecayBase => 0.15;
-        private double agilityStrainDecayBase => 0.1;
 
         private readonly List<double> sliderStrains = new List<double>();
         private readonly List<(double Time, double Diff)> previousStrains = new List<(double Time, double Diff)>();
@@ -46,7 +44,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private const double backwards_strain_influence = 1000;
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
-        private double agilityStrainDecay(double ms) => Math.Pow(agilityStrainDecayBase, ms / 1000);
 
         protected override double CalculateInitialStrain(double offset, DifficultyHitObject current)
         {
@@ -54,31 +51,26 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             double strain = getCurrentStrainValue(offset);
 
-            currentAgilityStrain *= agilityStrainDecay(offset - current.Previous(0).StartTime);
-
             return strain;
         }
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            currentAgilityStrain *= agilityStrainDecay(current.DeltaTime);
-
             double currentDifficulty;
 
-            double snapDifficulty = AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders, Cheese) * snapMultiplier;
-            double flowDifficulty = FlowAimEvaluator.EvaluateDifficultyOf(current) * flowMultiplier;
-            double agilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(current) * agilityMultiplier;
+            double snapDifficulty = AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders, Cheese);
+            double flowDifficulty = FlowAimEvaluator.EvaluateDifficultyOf(current);
+            double agilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(current);
 
             bool isFlow = (flowDifficulty) < (snapDifficulty + agilityDifficulty);
 
             if (isFlow)
             {
-                currentDifficulty = flowDifficulty;
+                currentDifficulty = flowDifficulty * flowMultiplier;
             }
             else
             {
-                currentDifficulty = snapDifficulty + agilityDifficulty;
-                currentAgilityStrain += agilityDifficulty;
+                currentDifficulty = snapDifficulty * snapMultiplier + agilityDifficulty * agilityDifficulty;
             }
 
             currentStrain = getCurrentStrainValue(current.StartTime) * 2.25;
@@ -91,7 +83,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             if (currentStrain > maxStrain)
                 maxStrain = currentStrain;
 
-            return currentStrain + currentDifficulty * aimMultiplier;
+            return (currentStrain + currentDifficulty) * aimMultiplier;
         }
 
         private double getCurrentStrainValue(double endTime)
