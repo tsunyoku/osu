@@ -32,19 +32,45 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double maxStrain = 0;
         private double currentStrain;
 
-        private double skillMultiplier => 26;
+        private double currentAgilityStrain;
+        private double aimMultiplier => 0.98;
+        private double snapMultiplier => 31.3;
+        private double flowMultiplier => 8;
+        private double agilityMultiplier => 0.25;
         private double strainDecayBase => 0.15;
+        private double agilityStrainDecayBase => 0.1;
 
         private readonly List<double> sliderStrains = new List<double>();
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
+
+        private double agilityStrainDecay(double ms) => Math.Pow(agilityStrainDecayBase, ms / 1000);
 
         protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
             currentStrain *= strainDecay(current.DeltaTime);
-            currentStrain += AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders, Cheese) * skillMultiplier;
+            currentAgilityStrain *= agilityStrainDecay(current.DeltaTime);
+
+            double currentDifficulty;
+            double snapDifficulty = AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders, Cheese);
+            double flowDifficulty = FlowAimEvaluator.EvaluateDifficultyOf(current);
+            double agilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(current);
+
+            bool isFlow = (flowDifficulty) < (snapDifficulty + agilityDifficulty);
+
+            if (isFlow)
+            {
+                currentDifficulty = flowDifficulty * flowMultiplier;
+                currentStrain += currentDifficulty;
+            }
+            else
+            {
+                currentDifficulty = snapDifficulty * snapMultiplier;
+                currentAgilityStrain += agilityDifficulty * agilityMultiplier;
+                currentStrain += currentDifficulty + currentAgilityStrain;
+            }
 
             if (current.BaseObject is Slider)
                 sliderStrains.Add(currentStrain);
@@ -53,7 +79,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             if (currentStrain > maxStrain)
                 maxStrain = currentStrain;
 
-            return currentStrain;
+            return currentStrain * aimMultiplier;
         }
 
         public double GetDifficultSliders()
