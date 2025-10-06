@@ -154,14 +154,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 sliderBonus = osuLastObj.TravelDistance / osuLastObj.TravelTime;
             }
 
-            if (osuLast3Obj != null)
-            {
-                aimStrain *= calculateJumpOverlapCorrection((OsuHitObject)osuCurrObj.BaseObject,
-                    (OsuHitObject)osuLastObj.BaseObject,
-                    (OsuHitObject)osuLastLastObj.BaseObject,
-                    (OsuHitObject)osuLast3Obj.BaseObject);
-            }
-
             aimStrain *= angleRepetitionNerf;
 
             aimStrain += wideAngleBonus * wide_angle_multiplier;
@@ -216,29 +208,5 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         }
 
         private static double calcWideAngleBonus(double angle) => DifficultyCalculationUtils.Smoothstep(angle, double.DegreesToRadians(40), double.DegreesToRadians(140));
-
-        /// <summary>
-        /// We apply a nerf to big jumps where second-last or fourth-last and current objects are close.
-        /// This mainly targets repeating jumps such as
-        /// 1  3
-        ///  \/
-        ///  /\
-        /// 4  2
-        /// </summary>
-        private static double calculateJumpOverlapCorrection(OsuHitObject curr, OsuHitObject last, OsuHitObject lastLast, OsuHitObject last3)
-        {
-            float scalingFactor = OsuDifficultyHitObject.NORMALISED_RADIUS / (float)curr.Radius;
-
-            var lastLastToCurrDist = (curr.StackedPosition * scalingFactor - lastLast.StackedPosition * scalingFactor).Length / OsuDifficultyHitObject.NORMALISED_DIAMETER;
-            var last3ToCurrDist = (curr.StackedPosition * scalingFactor - last3.StackedPosition * scalingFactor).Length / OsuDifficultyHitObject.NORMALISED_DIAMETER;
-            var lastToCurrDist = (curr.StackedPosition * scalingFactor - last.StackedPosition * scalingFactor).Length / OsuDifficultyHitObject.NORMALISED_DIAMETER;
-
-            var secondLastToCurrentNerf = Math.Max(0.15 - 0.1 * lastLastToCurrDist, 0.0);
-            var fourthLastToCurrentNerf = Math.Max(0.1125 - 0.075 * last3ToCurrDist, 0.0);
-
-            var distanceCutoff = DifficultyCalculationUtils.Logistic(-((lastToCurrDist - 3.3) / 0.25));
-
-            return 1.0 - (secondLastToCurrentNerf + fourthLastToCurrentNerf) * distanceCutoff;
-        }
     }
 }

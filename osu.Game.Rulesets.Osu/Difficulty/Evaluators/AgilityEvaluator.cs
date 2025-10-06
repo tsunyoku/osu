@@ -12,7 +12,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 {
     public static class AgilityEvaluator
     {
-        public static double EvaluateDifficultyOf(DifficultyHitObject current)
+        public static double EvaluateDifficultyOf(DifficultyHitObject current, bool withCheesability)
         {
             if (current.BaseObject is Spinner || current.Index <= 1 || current.Previous(0).BaseObject is Spinner)
                 return 0;
@@ -22,12 +22,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             var osuCurrObj = (OsuDifficultyHitObject)current;
             var osuPrevObj = (OsuDifficultyHitObject)current.Previous(0);
 
+            double currStrainTime = osuCurrObj.AdjustedDeltaTime;
+            double lastStrainTime = osuPrevObj.AdjustedDeltaTime;
+
+            if (withCheesability)
+            {
+                currStrainTime += osuCurrObj.ExtraDeltaTime;
+                lastStrainTime += osuPrevObj.ExtraDeltaTime;
+            }
+
             double prevDistanceMultiplier = DifficultyCalculationUtils.Smootherstep(osuPrevObj.LazyJumpDistance / radius, 0.5, 1);
 
             // If the previous notes are stacked, we add the previous note's strainTime since there was no movement since at least 2 notes earlier.
             // https://youtu.be/-yJPIk-YSLI?t=186
-            double currTime = osuCurrObj.AdjustedDeltaTime + osuPrevObj.AdjustedDeltaTime * (1 - prevDistanceMultiplier);
-            double prevTime = osuPrevObj.AdjustedDeltaTime;
+            double currTime = currStrainTime + lastStrainTime * (1 - prevDistanceMultiplier);
+            double prevTime = lastStrainTime;
 
             double baseFactor = 1;
 

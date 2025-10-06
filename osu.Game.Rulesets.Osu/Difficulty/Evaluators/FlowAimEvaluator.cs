@@ -7,12 +7,13 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
+using osuTK;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 {
-public static class FlowAimEvaluator
+    public static class FlowAimEvaluator
     {
-        public static double EvaluateDifficultyOf(DifficultyHitObject current)
+        public static double EvaluateDifficultyOf(DifficultyHitObject current, bool withCheesability)
         {
             if (current.BaseObject is Spinner || current.Index <= 1 || current.Previous(0).BaseObject is Spinner)
                 return 0;
@@ -21,48 +22,91 @@ public static class FlowAimEvaluator
             var osuPrevObj = (OsuDifficultyHitObject)current.Previous(0);
             var osuPrev2Obj = (OsuDifficultyHitObject)current.Previous(1);
 
+            var osuNextObj = (OsuDifficultyHitObject)current.Next(0);
+            var osuPrev3Obj = (OsuDifficultyHitObject)current.Previous(2);
+
+            double currStrainTime = osuCurrObj.AdjustedDeltaTime;
+            double prev2StrainTime = osuPrev2Obj.AdjustedDeltaTime;
+            double prev3StrainTime = osuPrev3Obj.AdjustedDeltaTime;
+            double nextStrainTime = osuNextObj.AdjustedDeltaTime;
+
+            if (withCheesability)
+            {
+                currStrainTime += osuCurrObj.ExtraDeltaTime;
+                prev2StrainTime += osuPrev2Obj.ExtraDeltaTime;
+                prev3StrainTime += osuPrev3Obj.ExtraDeltaTime;
+                nextStrainTime += osuNextObj.ExtraDeltaTime;
+            }
+
             double currDistanceDifference = Math.Abs(osuCurrObj.MinimumJumpDistance - osuPrevObj.MinimumJumpDistance);
             double prevDistanceDifference = Math.Abs(osuPrevObj.MinimumJumpDistance - osuPrev2Obj.MinimumJumpDistance);
 
             double jerk = Math.Abs(currDistanceDifference - prevDistanceDifference);
 
-            double angleDifferenceAdjusted = Math.Sin(directionChange(osuCurrObj, osuPrevObj) / 2) * 180;
+            double angleDifferenceAdjusted = Math.Sin(directionChange(osuCurrObj) / 2) * 180;
 
-            var osuNextObj = (OsuDifficultyHitObject)current.Next(0);
-            var osuPrev3Obj = (OsuDifficultyHitObject)current.Previous(2);
+            double acuteBonus = 0;
 
-            // Nerf the last note of spaced triples as its angle is not representative of its flow difficulty
-            if (osuPrev3Obj.IsNotNull() && Math.Abs(osuPrev2Obj.AdjustedDeltaTime - osuPrev3Obj.AdjustedDeltaTime) > 25 &&
-                osuNextObj.IsNotNull() && Math.Abs(osuCurrObj.AdjustedDeltaTime - osuNextObj.AdjustedDeltaTime) > 25 && osuCurrObj.Angle.IsNotNull())
+            if (osuCurrObj.Angle.IsNotNull())
             {
-                angleDifferenceAdjusted *= DifficultyCalculationUtils.Smootherstep(osuCurrObj.Angle.Value, double.DegreesToRadians(180), double.DegreesToRadians(90));
-                jerk *= DifficultyCalculationUtils.Smootherstep(osuCurrObj.Angle.Value, double.DegreesToRadians(180), double.DegreesToRadians(90));
+                acuteBonus = calcAcuteAngleBonus(osuCurrObj.Angle.Value) * 2;
+
+                // Nerf the third note of bursts as its angle is not representative of its flow difficulty
+                if (osuPrev3Obj.IsNotNull() && Math.Abs(prev2StrainTime - prev3StrainTime) > 25)
+                {
+                    angleDifferenceAdjusted *= DifficultyCalculationUtils.Smootherstep(osuCurrObj.Angle.Value, double.DegreesToRadians(180), double.DegreesToRadians(90));
+                    jerk *= DifficultyCalculationUtils.Smootherstep(osuCurrObj.Angle.Value, double.DegreesToRadians(180), double.DegreesToRadians(90));
+                }
             }
 
             double angularChangeBonus = Math.Max(0.0, 0.6 * Math.Log10(angleDifferenceAdjusted));
 
-            double adjustedDistanceScale = 0.85 + Math.Min(1, jerk / 15) + angularChangeBonus * Math.Min(1, jerk / 15);
+            double adjustedDistanceScale = 0.85 + Math.Min(1, jerk / 15) + Math.Max(angularChangeBonus, acuteBonus) * Math.Clamp(jerk / 15, 0.5, 1);
 
             double distanceFactor = Math.Pow(osuCurrObj.LazyJumpDistance, 2) * adjustedDistanceScale;
 
-            double difficulty = distanceFactor / osuCurrObj.AdjustedDeltaTime;
+            double difficulty = distanceFactor / currStrainTime;
 
             difficulty *= osuCurrObj.SmallCircleBonus;
 
             return difficulty * 0.02;
         }
 
-        private static double directionChange(OsuDifficultyHitObject osuCurrObj, OsuDifficultyHitObject osuPrevObj)
+        private static double directionChange(DifficultyHitObject current)
         {
             double directionChangeFactor = 0;
+
+            var osuCurrObj = (OsuDifficultyHitObject)current;
+            var osuPrevObj = (OsuDifficultyHitObject)current.Previous(0);
+            var osuPrev2Obj = (OsuDifficultyHitObject)current.Previous(1);
 
             if (osuCurrObj.AngleSigned.IsNotNull() && osuPrevObj.AngleSigned.IsNotNull() &&
                 osuCurrObj.Angle.IsNotNull() && osuPrevObj.Angle.IsNotNull())
             {
                 double signedAngleDifference = Math.Abs(osuCurrObj.AngleSigned.Value - osuPrevObj.AngleSigned.Value);
 
+                var curBaseObj = (OsuHitObject)osuCurrObj.BaseObject;
+                var prevBaseObj = (OsuHitObject)osuPrevObj.BaseObject;
+                var prev2BaseObj = (OsuHitObject)osuPrev2Obj.BaseObject;
+
+                Vector2 lineVector = prev2BaseObj.StackedEndPosition - curBaseObj.StackedEndPosition;
+                Vector2 toMiddle = prevBaseObj.StackedEndPosition - curBaseObj.StackedEndPosition;
+
+                float dotToMiddleLine = Vector2.Dot(toMiddle, lineVector);
+                float dotLineLine = Vector2.Dot(lineVector, lineVector);
+
+                float projectionScalar = dotToMiddleLine / dotLineLine;
+
+                Vector2 projection = lineVector * projectionScalar;
+
+                float scalingFactor = OsuDifficultyHitObject.NORMALISED_RADIUS / (float)curBaseObj.Radius;
+
+                double perpendicularDistance = curBaseObj.StackedPosition.Equals(prev2BaseObj.StackedPosition)
+                    ? osuCurrObj.LazyJumpDistance
+                    : (toMiddle * scalingFactor - projection * scalingFactor).Length;
+
                 // Account for the fact that you can aim patterns in a straight line
-                signedAngleDifference *= DifficultyCalculationUtils.Smootherstep(osuCurrObj.Angle.Value, double.DegreesToRadians(180), double.DegreesToRadians(90));
+                signedAngleDifference *= DifficultyCalculationUtils.Smootherstep(perpendicularDistance, OsuDifficultyHitObject.NORMALISED_RADIUS * 0.5, OsuDifficultyHitObject.NORMALISED_RADIUS * 1.5);
 
                 double angleDifference = Math.Abs(osuCurrObj.Angle.Value - osuPrevObj.Angle.Value);
 
@@ -71,5 +115,7 @@ public static class FlowAimEvaluator
 
             return directionChangeFactor;
         }
+
+        private static double calcAcuteAngleBonus(double angle) => DifficultyCalculationUtils.Smoothstep(angle, double.DegreesToRadians(140), double.DegreesToRadians(70));
     }
 }

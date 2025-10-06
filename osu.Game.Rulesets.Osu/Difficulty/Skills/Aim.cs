@@ -54,21 +54,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             currentAgilityStrain *= agilityStrainDecay(current.DeltaTime);
 
             double currentDifficulty;
-            double snapDifficulty = AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders, Cheese);
-            double flowDifficulty = FlowAimEvaluator.EvaluateDifficultyOf(current);
-            double agilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(current);
+            double snapDifficulty = AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders, Cheese) * snapMultiplier;
+            double flowDifficulty = FlowAimEvaluator.EvaluateDifficultyOf(current, Cheese) * flowMultiplier;
+            double agilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(current, Cheese) * agilityMultiplier;
 
-            bool isFlow = (flowDifficulty) < (snapDifficulty + agilityDifficulty);
+            bool isFlow = flowDifficulty < (snapDifficulty + agilityDifficulty);
 
             if (isFlow)
             {
-                currentDifficulty = flowDifficulty * flowMultiplier;
+                currentDifficulty = flowDifficulty;
                 currentStrain += currentDifficulty;
             }
             else
             {
-                currentDifficulty = snapDifficulty * snapMultiplier;
-                currentAgilityStrain += agilityDifficulty * agilityMultiplier;
+                currentDifficulty = snapDifficulty;
+                currentAgilityStrain += agilityDifficulty;
                 currentStrain += currentDifficulty + currentAgilityStrain;
             }
 
