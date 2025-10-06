@@ -21,21 +21,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             var osuCurrObj = (OsuDifficultyHitObject)current;
             var osuPrevObj = (OsuDifficultyHitObject)current.Previous(0);
             var osuPrev2Obj = (OsuDifficultyHitObject)current.Previous(1);
-
-            var osuNextObj = (OsuDifficultyHitObject)current.Next(0);
             var osuPrev3Obj = (OsuDifficultyHitObject)current.Previous(2);
 
             double currStrainTime = osuCurrObj.AdjustedDeltaTime;
             double prev2StrainTime = osuPrev2Obj.AdjustedDeltaTime;
-            double prev3StrainTime = osuPrev3Obj.AdjustedDeltaTime;
-            double nextStrainTime = osuNextObj.AdjustedDeltaTime;
+            double? prev3StrainTime = osuPrev3Obj.IsNotNull() ? osuPrev3Obj.AdjustedDeltaTime : null;
 
             if (withCheesability)
             {
                 currStrainTime += osuCurrObj.ExtraDeltaTime;
                 prev2StrainTime += osuPrev2Obj.ExtraDeltaTime;
-                prev3StrainTime += osuPrev3Obj.ExtraDeltaTime;
-                nextStrainTime += osuNextObj.ExtraDeltaTime;
+
+                if (prev3StrainTime.IsNotNull())
+                    prev3StrainTime += osuPrev3Obj.ExtraDeltaTime;
             }
 
             double currDistanceDifference = Math.Abs(osuCurrObj.MinimumJumpDistance - osuPrevObj.MinimumJumpDistance);
@@ -52,7 +50,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 acuteBonus = calcAcuteAngleBonus(osuCurrObj.Angle.Value) * 2;
 
                 // Nerf the third note of bursts as its angle is not representative of its flow difficulty
-                if (osuPrev3Obj.IsNotNull() && Math.Abs(prev2StrainTime - prev3StrainTime) > 25)
+                if (osuPrev3Obj.IsNotNull() && Math.Abs(prev2StrainTime - prev3StrainTime!.Value) > 25)
                 {
                     angleDifferenceAdjusted *= DifficultyCalculationUtils.Smootherstep(osuCurrObj.Angle.Value, double.DegreesToRadians(180), double.DegreesToRadians(90));
                     jerk *= DifficultyCalculationUtils.Smootherstep(osuCurrObj.Angle.Value, double.DegreesToRadians(180), double.DegreesToRadians(90));
