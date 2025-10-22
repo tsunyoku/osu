@@ -71,9 +71,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 ratingMultiplier += CalculateVisibilityBonus(mods, approachRate, visibilityFactor, sliderFactor);
             }
 
-            // It is important to consider accuracy difficulty when scaling with accuracy.
-            ratingMultiplier *= 0.98 + Math.Pow(Math.Max(0, overallDifficulty), 2) / 2500;
-
             return aimRating * Math.Cbrt(ratingMultiplier);
         }
 
