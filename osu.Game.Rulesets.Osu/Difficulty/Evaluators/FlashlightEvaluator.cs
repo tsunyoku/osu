@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
@@ -92,13 +93,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double sliderBonus = 0.0;
 
-            if (osuCurrent.BaseObject is Slider osuSlider)
+            if (osuCurrent.BaseObject is Slider osuSlider && osuCurrent.Movements.Count > 1)
             {
                 // Invert the scaling factor to determine the true travel distance independent of circle size.
-                double pixelTravelDistance = osuCurrent.LazyTravelDistance / scalingFactor;
+                double pixelTravelDistance = osuCurrent.Movements.Skip(1).Select(x => x.Distance).Sum() / scalingFactor;
 
                 // Reward sliders based on velocity.
-                sliderBonus = Math.Pow(Math.Max(0.0, pixelTravelDistance / osuCurrent.TravelTime - min_velocity), 0.5);
+                sliderBonus = Math.Pow(Math.Max(0.0, pixelTravelDistance / osuCurrent.Movements.Skip(1).Select(x => x.Time).Sum() - min_velocity), 0.5);
 
                 // Longer sliders require more memorisation.
                 sliderBonus *= pixelTravelDistance;
