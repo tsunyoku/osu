@@ -40,36 +40,29 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double aimStrain = 0;
 
-            //if (withSliderTravelDistance)
+            var movementStrains = new List<double>();
+
+            foreach (var currentMovement in osuCurrObj.Movements)
             {
-                var movementStrains = new List<double>();
+                int indexOfMovement = osuCurrObj.Movements.IndexOf(currentMovement);
 
-                foreach (var currentMovement in osuCurrObj.Movements)
-                {
-                    int indexOfMovement = osuCurrObj.Movements.IndexOf(currentMovement);
+                var previousMovement = indexOfMovement > 0
+                    ? osuCurrObj.Movements[indexOfMovement - 1]
+                    : osuLastObj.Movements.Last();
 
-                    var previousMovement = indexOfMovement > 0
-                        ? osuCurrObj.Movements[indexOfMovement - 1]
-                        : osuLastObj.Movements.Last();
+                var prevPrevMovement = indexOfMovement > 1
+                    ? osuCurrObj.Movements[indexOfMovement - 2]
+                    : osuLastObj.Movements.Count > 1
+                        ? osuLastObj.Movements[^2]
+                        : osuLastLastObj.Movements.LastOrDefault();
 
-                    var prevPrevMovement = indexOfMovement > 1
-                        ? osuCurrObj.Movements[indexOfMovement - 2]
-                        : osuLastObj.Movements.Count > 1
-                            ? osuLastObj.Movements[^2]
-                            : osuLastLastObj.Movements.LastOrDefault();
-
-                    movementStrains.Add(calcMovementStrain(current, currentMovement, previousMovement, prevPrevMovement, osuCurrObj.BaseObject is Slider));
-                }
-
-                if (withSliderTravelDistance)
-                    aimStrain = movementStrains.Max();
-                else
-                    aimStrain = movementStrains[0];
+                movementStrains.Add(calcMovementStrain(current, currentMovement, previousMovement, prevPrevMovement, indexOfMovement > 0));
             }
-            /*else
-            {
-                aimStrain = calcMovementStrain(osuCurrObj.Movements[0], osuLastObj.Movements[0], osuLastLastObj?.Movements.FirstOrDefault());
-            }*/
+
+            if (withSliderTravelDistance)
+                aimStrain = movementStrains.Sum();
+            else
+                aimStrain = movementStrains[0];
 
             // Apply high circle size bonus
             aimStrain *= osuCurrObj.SmallCircleBonus;
@@ -77,7 +70,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             return aimStrain;
         }
 
-        private static double calcMovementStrain(DifficultyHitObject current, Movement currentMovement, Movement previousMovement, Movement? prevPrevMovement, bool isSlider)
+        private static double calcMovementStrain(DifficultyHitObject current, Movement currentMovement, Movement previousMovement, Movement? prevPrevMovement, bool isNested)
         {
             const int radius = OsuDifficultyHitObject.NORMALISED_RADIUS;
             const int diameter = OsuDifficultyHitObject.NORMALISED_DIAMETER;
@@ -92,7 +85,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double aimStrain = currVelocity;
 
-            if (prevPrevMovement != null && !isSlider)
+            if (prevPrevMovement != null && !isNested)
             {
                 double currAngle = angle(currentMovement, previousMovement);
                 double lastAngle = angle(previousMovement, prevPrevMovement);
@@ -173,9 +166,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             // Add in acute angle bonus or wide angle bonus, whichever is larger.
             aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier, wideAngleBonus * wide_angle_multiplier);
-
-            //if (isSlider)
-            //    aimStrain *= slider_multiplier;
 
             return aimStrain;
         }
