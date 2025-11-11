@@ -139,27 +139,28 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             var prevEndPosition = prevMovement?.End ?? lastDifficultyObject?.BaseObject.StackedPosition ?? Vector2.Zero;
             double prevEndTime = prevMovement?.EndTime ?? lastDifficultyObject?.EndTime ?? 0;
 
+            float scalingFactor = NORMALISED_RADIUS / (float)BaseObject.Radius;
             Movements.Add(new Movement
             {
                 Start = prevEndPosition,
                 StartTime = prevEndTime,
                 End = BaseObject.StackedPosition,
                 EndTime = StartTime,
-                ScalingFactor = NORMALISED_RADIUS / (float)BaseObject.Radius
+                ScalingFactor = scalingFactor
             });
 
             computeSliderMovements(clockRate);
 
-            // remove slider movements from the previous object that are equal to a head->head jump
             if (lastDifficultyObject != null)
             {
+                // remove slider movements from the previous object that are equal to a head->head jump
                 var headToHeadMovement = new Movement
                 {
                     Start = lastDifficultyObject.BaseObject.StackedPosition,
                     StartTime = lastDifficultyObject.StartTime,
                     End = BaseObject.StackedPosition,
                     EndTime = StartTime,
-                    ScalingFactor = NORMALISED_RADIUS / (float)BaseObject.Radius
+                    ScalingFactor = scalingFactor
                 };
 
                 var movementsToRemove = new List<Movement>();
@@ -167,8 +168,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 for (int i = 1; i < lastDifficultyObject.Movements.Count; i++)
                 {
                     var nestedMovement = lastDifficultyObject.Movements[i];
-
-                    float scalingFactor = NORMALISED_RADIUS / (float)BaseObject.Radius;
 
                     if (staysWithinRadius(headToHeadMovement, nestedMovement, assumed_slider_radius * scalingFactor))
                     {
