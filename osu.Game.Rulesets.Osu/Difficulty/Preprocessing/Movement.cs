@@ -12,8 +12,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         public double StartTime { get; set; }
         public Vector2 End { get; set; }
         public double EndTime { get; set; }
-        public float ScalingFactor { get; set; }
+        public double StartRadius { get; set; }
+        public double EndRadius { get; set; }
+
         public double Time => Math.Max(EndTime - StartTime, OsuDifficultyHitObject.MIN_DELTA_TIME);
-        public double Distance => (End * ScalingFactor - Start * ScalingFactor).Length;
+        public double Distance => (End * (OsuDifficultyHitObject.NORMALISED_RADIUS / (float)Math.Max(StartRadius, EndRadius)) - Start * (OsuDifficultyHitObject.NORMALISED_RADIUS / (float)Math.Max(StartRadius, EndRadius))).Length;
+
+        public override string ToString()
+        {
+            return $"{Start}->{End} ({Distance:N2}px, {Time:N2}ms)";
+        }
     }
 }
