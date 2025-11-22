@@ -8,7 +8,6 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
-using osuTK;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 {
@@ -108,8 +107,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             if (prevPrevMovement != null)
             {
-                double currAngle = angle(currentMovement, previousMovement);
-                double lastAngle = angle(previousMovement, prevPrevMovement);
+                double currAngle = currentMovement.Angle(previousMovement);
+                double lastAngle = previousMovement.Angle(prevPrevMovement);
 
                 // Rewarding angles, take the smaller velocity as base.
                 double angleBonus = Math.Min(currVelocity, prevVelocity);
@@ -196,17 +195,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 aimStrain *= slider_multiplier;
 
             return aimStrain;
-        }
-
-        private static double angle(Movement currMovement, Movement prevMovement)
-        {
-            Vector2 v1 = prevMovement.Start - prevMovement.End;
-            Vector2 v2 = currMovement.End - currMovement.Start;
-
-            float dot = Vector2.Dot(v1, v2);
-            float det = v1.X * v2.Y - v1.Y * v2.X;
-
-            return Math.Abs(Math.Atan2(det, dot));
         }
 
         private static double calcWideAngleBonus(double angle) => DifficultyCalculationUtils.Smoothstep(angle, double.DegreesToRadians(40), double.DegreesToRadians(140));

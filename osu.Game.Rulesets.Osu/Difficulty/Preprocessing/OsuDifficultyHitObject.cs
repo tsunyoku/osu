@@ -25,7 +25,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
         public const int MIN_DELTA_TIME = 25;
 
-        private const float maximum_slider_radius = NORMALISED_RADIUS * 2.4f;
         private float assumed_slider_radius = NORMALISED_RADIUS * 1.2f;
 
         /// <summary>
@@ -34,53 +33,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         private float slider_repeat_radius = NORMALISED_RADIUS * 1.4f;
 
         protected new OsuHitObject BaseObject => (OsuHitObject)base.BaseObject;
-        protected new OsuHitObject LastObject => (OsuHitObject)base.LastObject;
 
         /// <summary>
         /// <see cref="DifficultyHitObject.DeltaTime"/> capped to a minimum of <see cref="MIN_DELTA_TIME"/>ms.
         /// </summary>
         public readonly double AdjustedDeltaTime;
-
-        /// <summary>
-        /// Normalised distance from the "lazy" end position of the previous <see cref="OsuDifficultyHitObject"/> to the start position of this <see cref="OsuDifficultyHitObject"/>.
-        /// <para>
-        /// The "lazy" end position is the position at which the cursor ends up if the previous hitobject is followed with as minimal movement as possible (i.e. on the edge of slider follow circles).
-        /// </para>
-        /// </summary>
-        public double LazyJumpDistance { get; private set; }
-
-        /// <summary>
-        /// Normalised shortest distance to consider for a jump between the previous <see cref="OsuDifficultyHitObject"/> and this <see cref="OsuDifficultyHitObject"/>.
-        /// </summary>
-        /// <remarks>
-        /// This is bounded from above by <see cref="LazyJumpDistance"/>, and is smaller than the former if a more natural path is able to be taken through the previous <see cref="OsuDifficultyHitObject"/>.
-        /// </remarks>
-        /// <example>
-        /// Suppose a linear slider - circle pattern.
-        /// <br />
-        /// Following the slider lazily (see: <see cref="LazyJumpDistance"/>) will result in underestimating the true end position of the slider as being closer towards the start position.
-        /// As a result, <see cref="LazyJumpDistance"/> overestimates the jump distance because the player is able to take a more natural path by following through the slider to its end,
-        /// such that the jump is felt as only starting from the slider's true end position.
-        /// <br />
-        /// Now consider a slider - circle pattern where the circle is stacked along the path inside the slider.
-        /// In this case, the lazy end position correctly estimates the true end position of the slider and provides the more natural movement path.
-        /// </example>
-        public double MinimumJumpDistance { get; private set; }
-
-        /// <summary>
-        /// The time taken to travel through <see cref="MinimumJumpDistance"/>, with a minimum value of 25ms.
-        /// </summary>
-        public double MinimumJumpTime { get; private set; }
-
-        /// <summary>
-        /// Normalised distance between the start and end position of this <see cref="OsuDifficultyHitObject"/>.
-        /// </summary>
-        public double TravelDistance { get; private set; }
-
-        /// <summary>
-        /// The time taken to travel through <see cref="TravelDistance"/>, with a minimum value of 25ms for <see cref="Slider"/> objects.
-        /// </summary>
-        public double TravelTime { get; private set; }
 
         /// <summary>
         /// The position of the cursor at the point of completion of this <see cref="OsuDifficultyHitObject"/> if it is a <see cref="Slider"/>
@@ -89,22 +46,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         public Vector2? LazyEndPosition { get; private set; }
 
         /// <summary>
-        /// The distance travelled by the cursor upon completion of this <see cref="OsuDifficultyHitObject"/> if it is a <see cref="Slider"/>
-        /// and was hit with as few movements as possible.
-        /// </summary>
-        public double LazyTravelDistance { get; private set; }
-
-        /// <summary>
         /// The time taken by the cursor upon completion of this <see cref="OsuDifficultyHitObject"/> if it is a <see cref="Slider"/>
         /// and was hit with as few movements as possible.
         /// </summary>
         public double LazyTravelTime { get; private set; }
-
-        /// <summary>
-        /// Angle the player has to take to hit this <see cref="OsuDifficultyHitObject"/>.
-        /// Calculated as the angle between the circles (current-2, current-1, current).
-        /// </summary>
-        public double? Angle { get; private set; }
 
         /// <summary>
         /// Retrieves the full hit window for a Great <see cref="HitResult"/>.
@@ -116,15 +61,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double SmallCircleBonus { get; private set; }
 
-        public List<Movement> Movements { get; } = new();
+        public List<Movement> Movements { get; } = new List<Movement>();
 
-        private readonly OsuDifficultyHitObject? lastLastDifficultyObject;
+        public Movement? PreviousMovement => lastDifficultyObject?.Movements.Last();
+
         private readonly OsuDifficultyHitObject? lastDifficultyObject;
 
         public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
-            lastLastDifficultyObject = index > 1 ? (OsuDifficultyHitObject)objects[index - 2] : null;
             lastDifficultyObject = index > 0 ? (OsuDifficultyHitObject)objects[index - 1] : null;
 
             // Capped to 25ms to prevent difficulty calculation breaking from simultaneous objects.
@@ -155,8 +100,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                     EndTime = StartTime,
                     EndRadius = BaseObject.Radius
                 };
-
-                MinimumJumpDistance = headToHeadMovement.Distance; // temp: for easier debugging
 
                 var movementsToRemove = new List<Movement>();
 
@@ -375,8 +318,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                     // this finds the positional delta from the required radius and the current position, and updates the currCursorPosition accordingly, as well as rewarding distance.
 
                     currCursorPosition = newCurrPosition;
-                    currMovementLength *= actualMovementLength;
-                    LazyTravelDistance += currMovementLength;
                     currCursorTime = newCurrTime;
                     currRadius = nestedRadius;
                 }

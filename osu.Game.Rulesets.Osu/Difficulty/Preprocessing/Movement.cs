@@ -22,5 +22,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         {
             return $"{Start}->{End} ({Distance:N2}px, {Time:N2}ms)";
         }
+
+        public double Angle(Movement other)
+        {
+            Vector2 v1 = other.Start - other.End;
+            Vector2 v2 = End - Start;
+
+            float dot = Vector2.Dot(v1, v2);
+            float det = v1.X * v2.Y - v1.Y * v2.X;
+
+            return Math.Abs(Math.Atan2(det, dot));
+        }
     }
 }
