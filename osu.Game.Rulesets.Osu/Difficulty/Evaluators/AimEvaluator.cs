@@ -191,9 +191,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             var osuCurrObj = (OsuDifficultyHitObject)current;
             aimStrain *= osuCurrObj.SmallCircleBonus;
 
-            if (isNested)
-                aimStrain *= slider_multiplier;
-
             return aimStrain;
         }
 
