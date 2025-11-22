@@ -329,6 +329,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 var currNestedObj = (OsuHitObject)nestedObjects[i];
 
                 Vector2 currMovement = currNestedObj.StackedPosition - currCursorPosition;
+                double newCurrTime = currNestedObj.StartTime;
 
                 // Amount of movement required so that the cursor position needs to be updated.
                 double nestedRadius = assumed_slider_radius;
@@ -344,6 +345,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                     if (lazyMovement.Length < currMovement.Length)
                     {
                         currMovement = lazyMovement;
+                        newCurrTime = trackingEndTime;
                     }
                 }
                 else if (currNestedObj is SliderRepeat)
@@ -359,7 +361,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                     double actualMovementLength = (currMovementLength - nestedRadius) / currMovementLength;
 
                     var newCurrPosition = currCursorPosition + currMovement * (float)actualMovementLength;
-                    double newCurrTime = Math.Min(trackingEndTime, currNestedObj.StartTime);
 
                     Movements.Add(new Movement
                     {
