@@ -114,7 +114,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 // Rewarding angles, take the smaller velocity as base.
                 double angleBonus = Math.Min(currVelocity, prevVelocity);
 
-                if (!isNested && Math.Max(currentMovement.Time, previousMovement.Time) < 1.25 * Math.Min(currentMovement.Time, previousMovement.Time)) // If rhythms are the same.
+                if (Math.Max(currentMovement.Time, previousMovement.Time) < 1.25 * Math.Min(currentMovement.Time, previousMovement.Time)) // If rhythms are the same.
                 {
                     acuteAngleBonus = calcAcuteAngleBonus(currAngle);
 
