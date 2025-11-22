@@ -8,6 +8,7 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Objects;
+using osu.Game.Rulesets.Osu.UI;
 using osu.Game.Rulesets.Scoring;
 using osuTK;
 
@@ -25,7 +26,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         public const int MIN_DELTA_TIME = 25;
 
         private const float maximum_slider_radius = NORMALISED_RADIUS * 2.4f;
-        private const float assumed_slider_radius = NORMALISED_RADIUS * 1.8f;
+        private float assumed_slider_radius = NORMALISED_RADIUS * 1.2f;
+
+        /// <summary>
+        /// SliderRepeat radius has higher radius to make sure buzzsliders aren't getting unnecessary movements
+        /// </summary>
+        private float slider_repeat_radius = NORMALISED_RADIUS * 1.4f;
 
         protected new OsuHitObject BaseObject => (OsuHitObject)base.BaseObject;
         protected new OsuHitObject LastObject => (OsuHitObject)base.LastObject;
@@ -162,9 +168,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
                     if (staysWithinRadius(headToHeadMovement, nestedMovement, assumed_slider_radius / scalingFactor))
                     {
-                        // if a movement repeats head-to-head movement it can be removed, but only if all subsequent movements also follow the same line
-                        shouldRemoveMovements = true;
-                        movementsToRemove.Add(nestedMovement);
+                        if (nestedMovement.Distance > headToHeadMovement.Distance)
+                        {
+                            // if a movement repeats head-to-head movement it can be removed, but only if all subsequent movements also follow the same line
+                            shouldRemoveMovements = true;
+                            movementsToRemove.Add(nestedMovement);
+                        }
                     }
                     else if (shouldRemoveMovements)
                     {
@@ -184,14 +193,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             }
 
             var prevMovement = lastDifficultyObject?.Movements.LastOrDefault();
-            var prevEndPosition = prevMovement?.End ?? lastDifficultyObject?.BaseObject.StackedPosition ?? Vector2.Zero;
+            var prevEndPosition = prevMovement?.End ?? lastDifficultyObject?.BaseObject.StackedPosition ?? OsuPlayfield.BASE_SIZE / 2;
             double prevEndTime = prevMovement?.EndTime ?? lastDifficultyObject?.EndTime ?? 0;
 
             Movements.Add(new Movement
             {
                 Start = prevEndPosition,
-                StartRadius = prevMovement?.EndRadius ?? (float?)lastDifficultyObject?.BaseObject.Radius ?? 1f,
                 StartTime = prevEndTime,
+                StartRadius = prevMovement?.EndRadius ?? (float?)lastDifficultyObject?.BaseObject.Radius ?? 1f,
                 End = BaseObject.StackedPosition,
                 EndTime = StartTime,
                 EndRadius = BaseObject.Radius
@@ -319,8 +328,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             {
                 var currNestedObj = (OsuHitObject)nestedObjects[i];
 
-                Vector2 currMovement = Vector2.Subtract(currNestedObj.StackedPosition, currCursorPosition);
-                double currMovementLength = scalingFactor * currMovement.Length;
+                Vector2 currMovement = currNestedObj.StackedPosition - currCursorPosition;
 
                 // Amount of movement required so that the cursor position needs to be updated.
                 double nestedRadius = assumed_slider_radius;
@@ -331,36 +339,44 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                     // There is both a lazy end position as well as the actual end slider position. We assume the player takes the simpler movement.
                     // For sliders that are circular, the lazy end position may actually be farther away than the sliders true end.
                     // This code is designed to prevent buffing situations where lazy end is actually a less efficient movement.
-                    Vector2 lazyMovement = Vector2.Subtract((Vector2)LazyEndPosition, currCursorPosition);
+                    Vector2 lazyMovement = (Vector2)LazyEndPosition - currCursorPosition;
 
                     if (lazyMovement.Length < currMovement.Length)
+                    {
                         currMovement = lazyMovement;
-
-                    currMovementLength = scalingFactor * currMovement.Length;
+                    }
                 }
                 else if (currNestedObj is SliderRepeat)
                 {
                     // For a slider repeat, assume a tighter movement threshold to better assess repeat sliders.
-                    //nestedRadius = NORMALISED_RADIUS;
+                    nestedRadius = slider_repeat_radius;
                 }
+
+                double currMovementLength = currMovement.Length * scalingFactor;
 
                 if (currMovementLength > nestedRadius)
                 {
+                    double actualMovementLength = (currMovementLength - nestedRadius) / currMovementLength;
+
+                    var newCurrPosition = currCursorPosition + currMovement * (float)actualMovementLength;
+                    double newCurrTime = Math.Min(trackingEndTime, currNestedObj.StartTime);
+
                     Movements.Add(new Movement
                     {
                         Start = currCursorPosition,
                         StartTime = currCursorTime / clockRate,
                         StartRadius = currRadius / scalingFactor,
-                        End = currNestedObj.StackedPosition,
-                        EndTime = Math.Min(trackingEndTime, currNestedObj.StartTime) / clockRate,
+                        End = newCurrPosition,
+                        EndTime = newCurrTime / clockRate,
                         EndRadius = nestedRadius / scalingFactor
                     });
 
                     // this finds the positional delta from the required radius and the current position, and updates the currCursorPosition accordingly, as well as rewarding distance.
-                    currCursorPosition = Vector2.Add(currCursorPosition, Vector2.Multiply(currMovement, (float)((currMovementLength - nestedRadius) / currMovementLength)));
-                    currMovementLength *= (currMovementLength - nestedRadius) / currMovementLength;
+
+                    currCursorPosition = newCurrPosition;
+                    currMovementLength *= actualMovementLength;
                     LazyTravelDistance += currMovementLength;
-                    currCursorTime = Math.Min(trackingEndTime, currNestedObj.StartTime);
+                    currCursorTime = newCurrTime;
                     currRadius = nestedRadius;
                 }
 

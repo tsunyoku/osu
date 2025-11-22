@@ -31,7 +31,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// </summary>
         public static double EvaluateDifficultyOf(DifficultyHitObject current, bool withSliderTravelDistance)
         {
-            if (current.BaseObject is Spinner || current.Index <= 2 || current.Previous(0).BaseObject is Spinner)
+            if (current.BaseObject is Spinner || current.Index < 1 || current.Previous(0).BaseObject is Spinner)
                 return 0;
 
             var osuCurrObj = (OsuDifficultyHitObject)current;
@@ -54,7 +54,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     ? osuCurrObj.Movements[indexOfMovement - 2]
                     : osuLastObj.Movements.Count > 1
                         ? osuLastObj.Movements[^2]
-                        : osuLastLastObj.Movements.LastOrDefault();
+                        : osuLastLastObj?.Movements.LastOrDefault();
 
                 movementStrains.Add(calcMovementStrain(current, currentMovement, previousMovement, prevPrevMovement, indexOfMovement > 0));
             }
@@ -64,10 +64,31 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             else
                 aimStrain = movementStrains[0];
 
-            // Apply high circle size bonus
-            aimStrain *= osuCurrObj.SmallCircleBonus;
-
             return aimStrain;
+        }
+
+        public static double EvaluateDifficultyOfMovement(DifficultyHitObject current, Movement currentMovement)
+        {
+            if (current.BaseObject is Spinner || current.Index < 1 || current.Previous(0).BaseObject is Spinner)
+                return 0;
+
+            var osuCurrObj = (OsuDifficultyHitObject)current;
+            var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
+            var osuLastLastObj = (OsuDifficultyHitObject)current.Previous(1);
+
+            int indexOfMovement = osuCurrObj.Movements.IndexOf(currentMovement);
+
+            var previousMovement = indexOfMovement > 0
+                ? osuCurrObj.Movements[indexOfMovement - 1]
+                : osuLastObj.Movements.Last();
+
+            var prevPrevMovement = indexOfMovement > 1
+                ? osuCurrObj.Movements[indexOfMovement - 2]
+                : osuLastObj.Movements.Count > 1
+                    ? osuLastObj.Movements[^2]
+                    : osuLastLastObj?.Movements.LastOrDefault();
+
+            return calcMovementStrain(current, currentMovement, previousMovement, prevPrevMovement, indexOfMovement > 0);
         }
 
         private static double calcMovementStrain(DifficultyHitObject current, Movement currentMovement, Movement previousMovement, Movement? prevPrevMovement, bool isNested)
@@ -85,7 +106,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double aimStrain = currVelocity;
 
-            if (prevPrevMovement != null && !isNested)
+            if (prevPrevMovement != null)
             {
                 double currAngle = angle(currentMovement, previousMovement);
                 double lastAngle = angle(previousMovement, prevPrevMovement);
@@ -93,7 +114,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 // Rewarding angles, take the smaller velocity as base.
                 double angleBonus = Math.Min(currVelocity, prevVelocity);
 
-                if (Math.Max(currentMovement.Time, previousMovement.Time) < 1.25 * Math.Min(currentMovement.Time, previousMovement.Time)) // If rhythms are the same.
+                if (!isNested && Math.Max(currentMovement.Time, previousMovement.Time) < 1.25 * Math.Min(currentMovement.Time, previousMovement.Time)) // If rhythms are the same.
                 {
                     acuteAngleBonus = calcAcuteAngleBonus(currAngle);
 
@@ -166,6 +187,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             // Add in acute angle bonus or wide angle bonus, whichever is larger.
             aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier, wideAngleBonus * wide_angle_multiplier);
+
+            // Apply high circle size bonus
+            var osuCurrObj = (OsuDifficultyHitObject)current;
+            aimStrain *= osuCurrObj.SmallCircleBonus;
 
             return aimStrain;
         }
