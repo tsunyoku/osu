@@ -168,7 +168,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
                     if (staysWithinRadius(headToHeadMovement, nestedMovement, assumed_slider_radius / scalingFactor))
                     {
-                        if (nestedMovement.Distance > headToHeadMovement.Distance)
+                        //if (nestedMovement.Distance > headToHeadMovement.Distance)
                         {
                             // if a movement repeats head-to-head movement it can be removed, but only if all subsequent movements also follow the same line
                             shouldRemoveMovements = true;
