@@ -301,9 +301,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
                 if (currMovementLength > nestedRadius)
                 {
-                    double actualMovementLength = (currMovementLength - nestedRadius) / currMovementLength;
+                    double movementLengthMultiplier = (currMovementLength - nestedRadius) / currMovementLength;
 
-                    var newCurrPosition = currCursorPosition + currMovement * (float)actualMovementLength;
+                    var newCurrPosition = currCursorPosition + currMovement * (float)movementLengthMultiplier;
 
                     Movements.Add(new Movement
                     {
@@ -314,8 +314,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                         EndTime = newCurrTime / clockRate,
                         EndRadius = nestedRadius / scalingFactor
                     });
-
-                    // this finds the positional delta from the required radius and the current position, and updates the currCursorPosition accordingly, as well as rewarding distance.
 
                     currCursorPosition = newCurrPosition;
                     currCursorTime = newCurrTime;

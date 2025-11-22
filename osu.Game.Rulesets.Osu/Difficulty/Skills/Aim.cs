@@ -41,16 +41,20 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             var osuCurrent = (OsuDifficultyHitObject)current;
 
-            for (int i = 0; i < osuCurrent.Movements.Count; i++)
+            var firstMovement = osuCurrent.Movements.First();
+            currentStrain *= strainDecay(firstMovement.Time);
+            currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, firstMovement) * skillMultiplier;
+
+            for (int i = 1; i < osuCurrent.Movements.Count; i++)
             {
                 var movement = osuCurrent.Movements[i];
 
                 // always apply strain decay to make circle-only strains decay at the same speed as slider stains
                 currentStrain *= strainDecay(movement.Time);
 
-                if (IncludeSliders || i == 0)
+                if (IncludeSliders)
                 {
-                    currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * skillMultiplier;
+                    currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * 20;
                 }
             }
 
