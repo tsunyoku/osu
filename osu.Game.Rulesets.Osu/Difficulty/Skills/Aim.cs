@@ -52,9 +52,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 // always apply strain decay to make circle-only strains decay at the same speed as slider stains
                 currentStrain *= strainDecay(movement.Time);
 
-                if (IncludeSliders)
+                if (IncludeSliders && movement.IsNested)
                 {
-                    currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * 20;
+                    currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * skillMultiplier * 0.4;
                 }
             }
 

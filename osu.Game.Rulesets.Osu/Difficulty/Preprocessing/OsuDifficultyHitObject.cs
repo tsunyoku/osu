@@ -30,7 +30,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// <summary>
         /// SliderRepeat radius has higher radius to make sure buzzsliders aren't getting unnecessary movements
         /// </summary>
-        private float slider_repeat_radius = NORMALISED_RADIUS * 1.4f;
+        private float slider_repeat_radius = NORMALISED_RADIUS * 1.2f;
 
         protected new OsuHitObject BaseObject => (OsuHitObject)base.BaseObject;
 
@@ -312,7 +312,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                         StartRadius = currRadius / scalingFactor,
                         End = newCurrPosition,
                         EndTime = newCurrTime / clockRate,
-                        EndRadius = nestedRadius / scalingFactor
+                        EndRadius = nestedRadius / scalingFactor,
+                        IsNested = true
                     });
 
                     currCursorPosition = newCurrPosition;

@@ -55,7 +55,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                         ? osuLastObj.Movements[^2]
                         : osuLastLastObj?.Movements.LastOrDefault();
 
-                movementStrains.Add(calcMovementStrain(current, currentMovement, previousMovement, prevPrevMovement, indexOfMovement > 0));
+                movementStrains.Add(calcMovementStrain(current, currentMovement, previousMovement, prevPrevMovement));
             }
 
             if (withSliderTravelDistance)
@@ -87,16 +87,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     ? osuLastObj.Movements[^2]
                     : osuLastLastObj?.Movements.LastOrDefault();
 
-            return calcMovementStrain(current, currentMovement, previousMovement, prevPrevMovement, indexOfMovement > 0);
+            return calcMovementStrain(current, currentMovement, previousMovement, prevPrevMovement);
         }
 
-        private static double calcMovementStrain(DifficultyHitObject current, Movement currentMovement, Movement previousMovement, Movement? prevPrevMovement, bool isNested)
+        private static double calcMovementStrain(DifficultyHitObject current, Movement currentMovement, Movement previousMovement, Movement? prevPrevMovement)
         {
             const int radius = OsuDifficultyHitObject.NORMALISED_RADIUS;
             const int diameter = OsuDifficultyHitObject.NORMALISED_DIAMETER;
 
-            double currVelocity = currentMovement.Distance / currentMovement.Time;
-            double prevVelocity = previousMovement.Distance / previousMovement.Time;
+            double currVelocity = currentMovement.Distance / (currentMovement.IsNested ? Math.Pow(currentMovement.Time, 0.8) : currentMovement.Time);
+            double prevVelocity = previousMovement.Distance / (previousMovement.IsNested ? Math.Pow(previousMovement.Time, 0.8) : previousMovement.Time);
 
             double wideAngleBonus = 0;
             double acuteAngleBonus = 0;
