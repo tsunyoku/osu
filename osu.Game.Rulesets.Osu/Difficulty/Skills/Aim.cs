@@ -50,13 +50,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 var movement = osuCurrent.Movements[i];
 
                 // always apply strain decay to make circle-only strains decay at the same speed as slider stains
-                currentStrain *= strainDecay(movement.Time);
+                //currentStrain *= strainDecay(movement.Time);
 
                 if (IncludeSliders && movement.IsNested)
                 {
-                    currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * skillMultiplier * 0.4;
+                    currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * skillMultiplier * 1.8;
                 }
             }
+
+            currentStrain *= strainDecay(osuCurrent.Movements.Skip(1).Sum(x=> x.Time));
 
             if (current.BaseObject is Slider)
                 sliderStrains.Add(currentStrain);
