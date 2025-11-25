@@ -30,7 +30,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// <summary>
         /// SliderRepeat radius has higher radius to make sure buzzsliders aren't getting unnecessary movements
         /// </summary>
-        private float slider_repeat_radius = NORMALISED_RADIUS * 1.2f;
+        private float slider_repeat_radius = NORMALISED_RADIUS * 1.3f;
 
         protected new OsuHitObject BaseObject => (OsuHitObject)base.BaseObject;
 
@@ -103,8 +103,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
                 var movementsToRemove = new List<Movement>();
 
-                bool shouldRemoveMovements = false;
-
                 for (int i = 1; i < lastDifficultyObject.Movements.Count; i++)
                 {
                     var nestedMovement = lastDifficultyObject.Movements[i];
@@ -114,24 +112,35 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                         //if (nestedMovement.Distance > headToHeadMovement.Distance)
                         {
                             // if a movement repeats head-to-head movement it can be removed, but only if all subsequent movements also follow the same line
-                            shouldRemoveMovements = true;
                             movementsToRemove.Add(nestedMovement);
                         }
                     }
-                    else if (shouldRemoveMovements)
+                    else if (movementsToRemove.Count > 0)
                     {
                         // cancel movement removal if the next movement doesn't also stay within radius since we'll need to move the cursor for both this and all previous movements to complete the slider
-                        shouldRemoveMovements = false;
+                        movementsToRemove.Clear();
                         break;
                     }
                 }
 
-                if (shouldRemoveMovements)
+                for (int i = 1; i < lastDifficultyObject.Movements.Count - 1; i++)
                 {
-                    foreach (var movement in movementsToRemove)
+                    var nestedMovement = lastDifficultyObject.Movements[i];
+
+                    if (nestedMovement.Distance < assumed_slider_radius)
                     {
-                        lastDifficultyObject.Movements.Remove(movement);
+                        var nextNestedMovement = lastDifficultyObject.Movements[i + 1];
+                        nextNestedMovement.Start = nestedMovement.Start;
+                        nextNestedMovement.StartTime = nestedMovement.StartTime;
+                        nextNestedMovement.StartRadius = nestedMovement.StartRadius;
+
+                        movementsToRemove.Add(nestedMovement);
                     }
+                }
+
+                foreach (var movement in movementsToRemove)
+                {
+                    lastDifficultyObject.Movements.Remove(movement);
                 }
             }
 
