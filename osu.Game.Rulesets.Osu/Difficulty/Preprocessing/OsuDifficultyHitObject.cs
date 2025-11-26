@@ -25,12 +25,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
         public const int MIN_DELTA_TIME = 25;
 
-        private float assumed_slider_radius = NORMALISED_RADIUS * 1.2f;
-
-        /// <summary>
-        /// SliderRepeat radius has higher radius to make sure buzzsliders aren't getting unnecessary movements
-        /// </summary>
-        private float slider_repeat_radius = NORMALISED_RADIUS * 1.3f;
+        private float assumed_slider_radius = NORMALISED_RADIUS * 1.0f;
 
         protected new OsuHitObject BaseObject => (OsuHitObject)base.BaseObject;
 
@@ -300,11 +295,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                         currMovement = lazyMovement;
                         newCurrTime = trackingEndTime;
                     }
-                }
-                else if (currNestedObj is SliderRepeat)
-                {
-                    // For a slider repeat, assume a tighter movement threshold to better assess repeat sliders.
-                    nestedRadius = slider_repeat_radius;
                 }
 
                 double currMovementLength = currMovement.Length * scalingFactor;
