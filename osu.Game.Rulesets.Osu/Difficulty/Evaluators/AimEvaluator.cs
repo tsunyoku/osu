@@ -37,6 +37,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
             var osuLastLastObj = (OsuDifficultyHitObject)current.Previous(1);
 
+            if (osuLastLastObj != null && osuLastLastObj.BaseObject is Spinner)
+                osuLastLastObj = null;
+
             double aimStrain = 0;
 
             var movementStrains = new List<double>();
@@ -74,6 +77,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             var osuCurrObj = (OsuDifficultyHitObject)current;
             var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
             var osuLastLastObj = (OsuDifficultyHitObject)current.Previous(1);
+
+            if (osuLastLastObj != null && osuLastLastObj.BaseObject is Spinner)
+                osuLastLastObj = null;
 
             int indexOfMovement = osuCurrObj.Movements.IndexOf(currentMovement);
 

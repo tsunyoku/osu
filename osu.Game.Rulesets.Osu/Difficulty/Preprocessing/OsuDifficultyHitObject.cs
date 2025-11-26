@@ -71,6 +71,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             lastDifficultyObject = index > 0 ? (OsuDifficultyHitObject)objects[index - 1] : null;
+            var osuLastObj = (OsuHitObject)lastObject;
 
             // Capped to 25ms to prevent difficulty calculation breaking from simultaneous objects.
             AdjustedDeltaTime = Math.Max(DeltaTime, MIN_DELTA_TIME);
@@ -145,8 +146,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             }
 
             var prevMovement = lastDifficultyObject?.Movements.LastOrDefault();
-            var prevEndPosition = prevMovement?.End ?? lastDifficultyObject?.BaseObject.StackedPosition ?? OsuPlayfield.BASE_SIZE / 2;
-            double prevEndTime = prevMovement?.EndTime ?? lastDifficultyObject?.EndTime ?? 0;
+            var prevEndPosition = prevMovement?.End ?? lastDifficultyObject?.BaseObject.StackedPosition ?? osuLastObj.StackedEndPosition;
+            double prevEndTime = prevMovement?.EndTime ?? lastDifficultyObject?.EndTime ?? (osuLastObj.StartTime / clockRate);
 
             Movements.Add(new Movement
             {
