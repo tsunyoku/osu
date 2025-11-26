@@ -26,6 +26,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         public const int MIN_DELTA_TIME = 25;
 
         private float assumed_slider_radius = NORMALISED_RADIUS * 1.0f;
+        private float redundant_slider_radius = NORMALISED_RADIUS * 1.3f;
 
         protected new OsuHitObject BaseObject => (OsuHitObject)base.BaseObject;
 
@@ -103,7 +104,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 {
                     var nestedMovement = lastDifficultyObject.Movements[i];
 
-                    if (staysWithinRadius(headToHeadMovement, nestedMovement, assumed_slider_radius / scalingFactor))
+                    if (staysWithinRadius(headToHeadMovement, nestedMovement, redundant_slider_radius / scalingFactor))
                     {
                         //if (nestedMovement.Distance > headToHeadMovement.Distance)
                         {
@@ -123,7 +124,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 {
                     var nestedMovement = lastDifficultyObject.Movements[i];
 
-                    if (nestedMovement.Distance < assumed_slider_radius)
+                    if (nestedMovement.Distance < redundant_slider_radius)
                     {
                         var nextNestedMovement = lastDifficultyObject.Movements[i + 1];
                         nextNestedMovement.Start = nestedMovement.Start;
