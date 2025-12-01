@@ -58,7 +58,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                         ? osuLastObj.Movements[^2]
                         : osuLastLastObj?.Movements.LastOrDefault();
 
-                movementStrains.Add(calcMovementStrain(current, currentMovement, previousMovement, prevPrevMovement));
+                movementStrains.Add(calcMovementStrain(current, currentMovement, previousMovement, prevPrevMovement, indexOfMovement > 0));
             }
 
             if (withSliderTravelDistance)
@@ -93,10 +93,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     ? osuLastObj.Movements[^2]
                     : osuLastLastObj?.Movements.LastOrDefault();
 
-            return calcMovementStrain(current, currentMovement, previousMovement, prevPrevMovement);
+            return calcMovementStrain(current, currentMovement, previousMovement, prevPrevMovement, indexOfMovement > 0);
         }
 
-        private static double calcMovementStrain(DifficultyHitObject current, Movement currentMovement, Movement previousMovement, Movement? prevPrevMovement)
+        private static double calcMovementStrain(DifficultyHitObject current, Movement currentMovement, Movement previousMovement, Movement? prevPrevMovement, bool isNested)
         {
             const int radius = OsuDifficultyHitObject.NORMALISED_RADIUS;
             const int diameter = OsuDifficultyHitObject.NORMALISED_DIAMETER;
@@ -194,8 +194,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier, wideAngleBonus * wide_angle_multiplier);
 
             // Apply high circle size bonus
-            var osuCurrObj = (OsuDifficultyHitObject)current;
-            aimStrain *= osuCurrObj.SmallCircleBonus;
+            if (!isNested)
+            {
+                var osuCurrObj = (OsuDifficultyHitObject)current;
+                aimStrain *= osuCurrObj.SmallCircleBonus;
+            }
 
             return aimStrain;
         }
