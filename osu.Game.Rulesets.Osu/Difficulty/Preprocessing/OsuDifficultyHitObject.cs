@@ -57,6 +57,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double SmallCircleBonus { get; private set; }
 
+        public double PathLengthToMovementLengthRatio { get; set; } = 1;
+
         public List<Movement> Movements { get; } = new List<Movement>();
 
         public Movement? PreviousMovement => lastDifficultyObject?.Movements.Last();
@@ -138,6 +140,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 foreach (var movement in movementsToRemove)
                 {
                     lastDifficultyObject.Movements.Remove(movement);
+                }
+
+                if (lastDifficultyObject.BaseObject is Slider slider && lastDifficultyObject.Movements.Count > 1)
+                {
+                    double movementsDistanceWithFollowRadius = lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Distance) + redundant_slider_radius / scalingFactor;
+                    lastDifficultyObject.PathLengthToMovementLengthRatio = Math.Clamp(movementsDistanceWithFollowRadius / (slider.Path.Distance * scalingFactor), 0, 1);
                 }
             }
 

@@ -46,7 +46,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, firstMovement) * skillMultiplier;
 
             if (IncludeSliders)
-                currentStrain += osuCurrent.Movements.Where(x => x.IsNested).Sum(x => AimEvaluator.EvaluateDifficultyOfMovement(current, x) * skillMultiplier * 1.50);
+            {
+                double ratioMultiplier = Math.Pow(Math.Pow(1 - osuCurrent.PathLengthToMovementLengthRatio, 2) + 1, 3);
+                currentStrain += osuCurrent.Movements.Where(x => x.IsNested).Sum(x => AimEvaluator.EvaluateDifficultyOfMovement(current, x) * skillMultiplier * 1.4 * ratioMultiplier);
+            }
 
             for (int i = 1; i < osuCurrent.Movements.Count; i++)
             {
