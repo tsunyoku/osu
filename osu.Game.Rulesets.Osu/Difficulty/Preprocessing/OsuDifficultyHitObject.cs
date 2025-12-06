@@ -297,68 +297,74 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
         private void adjustPreviousObjectMovements()
         {
+            if (lastDifficultyObject == null)
+                return;
+
             float scalingFactor = NORMALISED_RADIUS / (float)BaseObject.Radius;
 
-            if (lastDifficultyObject != null)
+            // remove slider movements from the previous object that are equal to a head->head jump
+            var headToHeadMovement = new Movement
             {
-                // remove slider movements from the previous object that are equal to a head->head jump
-                var headToHeadMovement = new Movement
+                Start = lastDifficultyObject.BaseObject.StackedPosition,
+                StartTime = lastDifficultyObject.StartTime,
+                StartRadius = lastDifficultyObject.BaseObject.Radius,
+                End = BaseObject.StackedPosition,
+                EndTime = StartTime,
+                EndRadius = BaseObject.Radius
+            };
+
+            var movementsToRemove = new List<Movement>();
+
+            for (int i = 1; i < lastDifficultyObject.Movements.Count; i++)
+            {
+                var nestedMovement = lastDifficultyObject.Movements[i];
+                if (!nestedMovement.IsNested)
+                    continue;
+
+                if (staysWithinRadius(headToHeadMovement, nestedMovement, redundant_slider_radius / scalingFactor))
                 {
-                    Start = lastDifficultyObject.BaseObject.StackedPosition,
-                    StartTime = lastDifficultyObject.StartTime,
-                    StartRadius = lastDifficultyObject.BaseObject.Radius,
-                    End = BaseObject.StackedPosition,
-                    EndTime = StartTime,
-                    EndRadius = BaseObject.Radius
-                };
-
-                var movementsToRemove = new List<Movement>();
-
-                for (int i = 1; i < lastDifficultyObject.Movements.Count; i++)
-                {
-                    var nestedMovement = lastDifficultyObject.Movements[i];
-
-                    if (staysWithinRadius(headToHeadMovement, nestedMovement, redundant_slider_radius / scalingFactor))
+                    //if (nestedMovement.Distance > headToHeadMovement.Distance)
                     {
-                        //if (nestedMovement.Distance > headToHeadMovement.Distance)
-                        {
-                            // if a movement repeats head-to-head movement it can be removed, but only if all subsequent movements also follow the same line
-                            movementsToRemove.Add(nestedMovement);
-                        }
-                    }
-                    else if (movementsToRemove.Count > 0)
-                    {
-                        // cancel movement removal if the next movement doesn't also stay within radius since we'll need to move the cursor for both this and all previous movements to complete the slider
-                        movementsToRemove.Clear();
-                        break;
-                    }
-                }
-
-                for (int i = 1; i < lastDifficultyObject.Movements.Count - 1; i++)
-                {
-                    var nestedMovement = lastDifficultyObject.Movements[i];
-
-                    if (nestedMovement.Distance < redundant_slider_radius)
-                    {
-                        var nextNestedMovement = lastDifficultyObject.Movements[i + 1];
-                        nextNestedMovement.Start = nestedMovement.Start;
-                        nextNestedMovement.StartTime = nestedMovement.StartTime;
-                        nextNestedMovement.StartRadius = nestedMovement.StartRadius;
-
+                        // if a movement repeats head-to-head movement it can be removed, but only if all subsequent movements also follow the same line
                         movementsToRemove.Add(nestedMovement);
                     }
                 }
-
-                foreach (var movement in movementsToRemove)
+                else if (movementsToRemove.Count > 0)
                 {
-                    lastDifficultyObject.Movements.Remove(movement);
+                    // cancel movement removal if the next movement doesn't also stay within radius since we'll need to move the cursor for both this and all previous movements to complete the slider
+                    movementsToRemove.Clear();
+                    break;
                 }
+            }
 
-                if (lastDifficultyObject.BaseObject is Slider slider && lastDifficultyObject.Movements.Count > 1)
+            for (int i = 1; i < lastDifficultyObject.Movements.Count - 1; i++)
+            {
+                var nestedMovement = lastDifficultyObject.Movements[i];
+                if (!nestedMovement.IsNested)
+                    continue;
+
+                // remove all movements shorter than the follow radius and adjust remaining movements to be continuous
+                if (nestedMovement.Distance < redundant_slider_radius)
                 {
-                    double movementsDistanceWithFollowRadius = lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Distance) + redundant_slider_radius / scalingFactor;
-                    lastDifficultyObject.PathLengthToMovementLengthRatio = Math.Clamp(movementsDistanceWithFollowRadius / (slider.Path.Distance * scalingFactor), 0, 1);
+                    var nextNestedMovement = lastDifficultyObject.Movements[i + 1];
+                    nextNestedMovement.Start = nestedMovement.Start;
+                    nextNestedMovement.StartTime = nestedMovement.StartTime;
+                    nextNestedMovement.StartRadius = nestedMovement.StartRadius;
+
+                    movementsToRemove.Add(nestedMovement);
                 }
+            }
+
+            foreach (var movement in movementsToRemove)
+            {
+                lastDifficultyObject.Movements.Remove(movement);
+            }
+
+            // set path to movement length ratio after we're done removing all the redundant movements
+            if (lastDifficultyObject.BaseObject is Slider slider && lastDifficultyObject.Movements.Count > 1)
+            {
+                double movementsDistanceWithFollowRadius = lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Distance) + redundant_slider_radius / scalingFactor;
+                lastDifficultyObject.PathLengthToMovementLengthRatio = Math.Clamp(movementsDistanceWithFollowRadius / (slider.Path.Distance * scalingFactor), 0, 1);
             }
         }
     }
