@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Difficulty.Utils;
@@ -23,6 +24,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
         private readonly bool isConvert;
 
         private double currentStrain;
+        private double lastStrain;
 
         /// <summary>
         /// Creates a <see cref="Stamina"/> skill.
@@ -39,8 +41,10 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
-        protected override double StrainValueAt(DifficultyHitObject current)
+        protected override IEnumerable<ObjectStrain> StrainValuesAt(DifficultyHitObject current)
         {
+            lastStrain = currentStrain;
+
             currentStrain *= strainDecay(current.DeltaTime);
             double staminaDifficulty = StaminaEvaluator.EvaluateDifficultyOf(current) * skillMultiplier;
 
@@ -58,12 +62,22 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 
             // For converted maps, difficulty often comes entirely from long mono streams with no colour variation.
             // To avoid over-rewarding these maps based purely on stamina strain, we dampen the strain value once the index exceeds 10.
-            return SingleColourStamina ? DifficultyCalculationUtils.Logistic(-(index - 10) / 2.0, currentStrain) : currentStrain;
+            double strainValue =
+                SingleColourStamina
+                    ? DifficultyCalculationUtils.Logistic(-(index - 10) / 2.0, currentStrain)
+                    : currentStrain;
+
+            yield return new ObjectStrain
+            {
+                Time = current.StartTime,
+                PreviousTime = current.Previous(0)?.StartTime ?? 0,
+                Value = strainValue,
+            };
         }
 
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) =>
+        protected override double CalculateInitialStrain(double deltaTime) =>
             SingleColourStamina
                 ? 0
-                : currentStrain * strainDecay(time - current.Previous(0).StartTime);
+                : lastStrain * strainDecay(deltaTime);
     }
 }

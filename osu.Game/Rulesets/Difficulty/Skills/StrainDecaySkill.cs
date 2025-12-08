@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mods;
 
@@ -29,19 +30,28 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         protected double CurrentStrain { get; private set; }
 
+        private double lastStrain;
+
         protected StrainDecaySkill(Mod[] mods)
             : base(mods)
         {
         }
 
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => CurrentStrain * strainDecay(time - current.Previous(0).StartTime);
+        protected override double CalculateInitialStrain(double deltaTime) => lastStrain * strainDecay(deltaTime);
 
-        protected override double StrainValueAt(DifficultyHitObject current)
+        protected override IEnumerable<ObjectStrain> StrainValuesAt(DifficultyHitObject current)
         {
+            lastStrain = CurrentStrain;
+
             CurrentStrain *= strainDecay(current.DeltaTime);
             CurrentStrain += StrainValueOf(current) * SkillMultiplier;
 
-            return CurrentStrain;
+            yield return new ObjectStrain
+            {
+                Time = current.StartTime,
+                PreviousTime = current.Previous(0)?.StartTime ?? 0,
+                Value = CurrentStrain,
+            };
         }
 
         /// <summary>

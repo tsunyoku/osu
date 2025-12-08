@@ -9,6 +9,7 @@ using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
 using System.Linq;
+using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Osu.Difficulty.Utils;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
@@ -23,6 +24,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double currentStrain;
         private double currentRhythm;
+        private double lastStrain;
+        private double lastRhythm;
 
         private readonly List<double> sliderStrains = new List<double>();
 
@@ -35,10 +38,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => (currentStrain * currentRhythm) * strainDecay(time - current.Previous(0).StartTime);
+        protected override double CalculateInitialStrain(double deltaTime) => (lastStrain * lastRhythm) * strainDecay(deltaTime);
 
-        protected override double StrainValueAt(DifficultyHitObject current)
+        protected override IEnumerable<ObjectStrain> StrainValuesAt(DifficultyHitObject current)
         {
+            lastStrain = currentStrain;
+            lastRhythm = currentRhythm;
+
             currentStrain *= strainDecay(((OsuDifficultyHitObject)current).AdjustedDeltaTime);
             currentStrain += SpeedEvaluator.EvaluateDifficultyOf(current, Mods) * skillMultiplier;
 
@@ -49,7 +55,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             if (current.BaseObject is Slider)
                 sliderStrains.Add(totalStrain);
 
-            return totalStrain;
+            yield return new ObjectStrain
+            {
+                Time = current.StartTime,
+                PreviousTime = current.Previous(0)?.StartTime ?? 0,
+                Value = totalStrain,
+            };
         }
 
         public double RelevantNoteCount()

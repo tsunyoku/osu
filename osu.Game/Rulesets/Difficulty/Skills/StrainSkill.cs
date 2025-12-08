@@ -39,29 +39,37 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// <summary>
         /// Returns the strain value at <see cref="DifficultyHitObject"/>. This value is calculated with or without respect to previous objects.
         /// </summary>
-        protected abstract double StrainValueAt(DifficultyHitObject current);
+        protected abstract IEnumerable<ObjectStrain> StrainValuesAt(DifficultyHitObject current);
 
         /// <summary>
         /// Process a <see cref="DifficultyHitObject"/> and update current strain values accordingly.
         /// </summary>
         public sealed override void Process(DifficultyHitObject current)
         {
+            var objectStrains = StrainValuesAt(current).ToArray();
+
             // The first object doesn't generate a strain, so we begin with an incremented section end
             if (current.Index == 0)
-                currentSectionEnd = Math.Ceiling(current.StartTime / SectionLength) * SectionLength;
+                currentSectionEnd = Math.Ceiling(objectStrains.First().Time / SectionLength) * SectionLength;
 
-            while (current.StartTime > currentSectionEnd)
+            foreach (var objectStrain in objectStrains)
             {
-                saveCurrentPeak();
-                startNewSectionFrom(currentSectionEnd, current);
-                currentSectionEnd += SectionLength;
+                checkCurrentSection(objectStrain);
+                currentSectionPeak = Math.Max(objectStrain.Value, currentSectionPeak);
             }
 
-            double strain = StrainValueAt(current);
-            currentSectionPeak = Math.Max(strain, currentSectionPeak);
-
             // Store the strain value for the object
-            ObjectStrains.Add(strain);
+            ObjectStrains.AddRange(objectStrains.Select(x => x.Value));
+        }
+
+        private void checkCurrentSection(ObjectStrain objectStrain)
+        {
+            while (objectStrain.Time > currentSectionEnd)
+            {
+                saveCurrentPeak();
+                startNewSectionFrom(currentSectionEnd - objectStrain.PreviousTime);
+                currentSectionEnd += SectionLength;
+            }
         }
 
         /// <summary>
@@ -93,22 +101,20 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// <summary>
         /// Sets the initial strain level for a new section.
         /// </summary>
-        /// <param name="time">The beginning of the new section in milliseconds.</param>
-        /// <param name="current">The current hit object.</param>
-        private void startNewSectionFrom(double time, DifficultyHitObject current)
+        /// <param name="deltaTime">The delta between the current strain and last strain.</param>
+        private void startNewSectionFrom(double deltaTime)
         {
             // The maximum strain of the new section is not zero by default
             // This means we need to capture the strain level at the beginning of the new section, and use that as the initial peak level.
-            currentSectionPeak = CalculateInitialStrain(time, current);
+            currentSectionPeak = CalculateInitialStrain(deltaTime);
         }
 
         /// <summary>
         /// Retrieves the peak strain at a point in time.
         /// </summary>
-        /// <param name="time">The time to retrieve the peak strain at.</param>
-        /// <param name="current">The current hit object.</param>
+        /// <param name="deltaTime">The delta between the current strain and last strain.</param>
         /// <returns>The peak strain.</returns>
-        protected abstract double CalculateInitialStrain(double time, DifficultyHitObject current);
+        protected abstract double CalculateInitialStrain(double deltaTime);
 
         /// <summary>
         /// Returns a live enumerable of the peak strains for each <see cref="SectionLength"/> section of the beatmap,
@@ -140,5 +146,14 @@ namespace osu.Game.Rulesets.Difficulty.Skills
 
             return difficulty;
         }
+    }
+
+    public class ObjectStrain
+    {
+        public required double Time { get; init; }
+
+        public required double PreviousTime { get; init; }
+
+        public required double Value { get; init; }
     }
 }

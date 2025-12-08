@@ -21,6 +21,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         private readonly double[] individualStrains;
         private double highestIndividualStrain;
         private double overallStrain;
+        private double lastHighestIndividualStrain;
+        private double lastOverallStrain;
 
         public Strain(Mod[] mods, int totalColumns)
             : base(mods)
@@ -31,6 +33,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 
         protected override double StrainValueOf(DifficultyHitObject current)
         {
+            lastOverallStrain = overallStrain;
+            lastHighestIndividualStrain = highestIndividualStrain;
+
             var maniaCurrent = (ManiaDifficultyHitObject)current;
 
             individualStrains[maniaCurrent.Column] = applyDecay(individualStrains[maniaCurrent.Column], maniaCurrent.ColumnStrainTime, individual_decay_base);
@@ -47,9 +52,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             return highestIndividualStrain + overallStrain - CurrentStrain;
         }
 
-        protected override double CalculateInitialStrain(double offset, DifficultyHitObject current) =>
-            applyDecay(highestIndividualStrain, offset - current.Previous(0).StartTime, individual_decay_base)
-            + applyDecay(overallStrain, offset - current.Previous(0).StartTime, overall_decay_base);
+        protected override double CalculateInitialStrain(double deltaTime) =>
+            applyDecay(lastHighestIndividualStrain, deltaTime, individual_decay_base)
+            + applyDecay(lastOverallStrain, deltaTime, overall_decay_base);
 
         private double applyDecay(double value, double deltaTime, double decayBase)
             => value * Math.Pow(decayBase, deltaTime / 1000);

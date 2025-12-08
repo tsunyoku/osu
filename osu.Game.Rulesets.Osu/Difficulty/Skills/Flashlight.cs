@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
@@ -28,17 +29,25 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double strainDecayBase => 0.15;
 
         private double currentStrain;
+        private double lastStrain;
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
+        protected override double CalculateInitialStrain(double deltaTime) => lastStrain * strainDecay(deltaTime);
 
-        protected override double StrainValueAt(DifficultyHitObject current)
+        protected override IEnumerable<ObjectStrain> StrainValuesAt(DifficultyHitObject current)
         {
+            lastStrain = currentStrain;
+
             currentStrain *= strainDecay(current.DeltaTime);
             currentStrain += FlashlightEvaluator.EvaluateDifficultyOf(current, hasHiddenMod) * skillMultiplier;
 
-            return currentStrain;
+            yield return new ObjectStrain
+            {
+                Time = current.StartTime,
+                PreviousTime = current.Previous(0)?.StartTime ?? 0,
+                Value = currentStrain,
+            };
         }
 
         public override double DifficultyValue() => GetCurrentStrainPeaks().Sum();

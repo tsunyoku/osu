@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
@@ -27,6 +28,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         }
 
         private double currentStrain;
+        private double lastStrain;
 
         private double skillMultiplier => 26.4;
         private double strainDecayBase => 0.15;
@@ -35,39 +37,33 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
+        protected override double CalculateInitialStrain(double deltaTime) => lastStrain * strainDecay(deltaTime);
 
-        protected override double StrainValueAt(DifficultyHitObject current)
+        protected override IEnumerable<ObjectStrain> StrainValuesAt(DifficultyHitObject current)
         {
             var osuCurrent = (OsuDifficultyHitObject)current;
-            var firstMovement = osuCurrent.Movements.First();
 
-            currentStrain *= strainDecay(firstMovement.Time);
-            currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, firstMovement) * skillMultiplier;
+            double previousTime = current.Previous(0)?.StartTime ?? 0;
 
-            if (IncludeSliders)
+            foreach (var movement in osuCurrent.Movements)
             {
-                double ratioMultiplier = Math.Pow(Math.Pow(1 - osuCurrent.PathLengthToMovementLengthRatio, 2) + 1, 3);
-                currentStrain += osuCurrent.Movements.Where(x => x.IsNested).Sum(x => AimEvaluator.EvaluateDifficultyOfMovement(current, x) * skillMultiplier * 1.4 * ratioMultiplier);
-            }
+                lastStrain = currentStrain;
 
-            for (int i = 1; i < osuCurrent.Movements.Count; i++)
-            {
-                var movement = osuCurrent.Movements[i];
-
-                // always apply strain decay to make circle-only strains decay at the same speed as slider stains
                 currentStrain *= strainDecay(movement.Time);
+                currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * skillMultiplier * (movement.IsNested ? 0.4 : 1.0);
 
-                if (IncludeSliders && movement.IsNested)
+                if (current.BaseObject is Slider && !movement.IsNested)
+                    sliderStrains.Add(currentStrain);
+
+                yield return new ObjectStrain
                 {
-                    //currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * skillMultiplier * 0.10;
-                }
+                    Time = movement.StartTime,
+                    PreviousTime = previousTime,
+                    Value = currentStrain,
+                };
+
+                previousTime = movement.StartTime;
             }
-
-            if (current.BaseObject is Slider)
-                sliderStrains.Add(currentStrain);
-
-            return currentStrain;
         }
 
         public double GetDifficultSliders()
