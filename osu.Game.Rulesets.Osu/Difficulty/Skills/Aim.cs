@@ -29,7 +29,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double currentAimStrain;
 
-        private double skillMultiplierAim => 26.0;
+        private double skillMultiplierAim => 28;
 
         private readonly List<double> sliderStrains = new List<double>();
 
