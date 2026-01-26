@@ -39,19 +39,28 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             const int radius = OsuDifficultyHitObject.NORMALISED_RADIUS;
             const int diameter = OsuDifficultyHitObject.NORMALISED_DIAMETER;
 
-            // Calculate the velocity to the current hitobject, which starts with a base distance / time assuming the last object is a hitcircle.
-            double currVelocity = osuCurrObj.LazyJumpDistance / osuCurrObj.AdjustedDeltaTime;
+            // Start from snapping difficulty
+            double currDistance = calculateSnappingDifficulty(osuCurrObj.LazyJumpDistance, osuCurrObj, osuLastObj);
+
+            // Add the distance to current object and find the velocity
+            currDistance += osuCurrObj.LazyJumpDistance;
+            double currVelocity = currDistance / osuCurrObj.AdjustedDeltaTime;
 
             // But if the last object is a slider, then we extend the travel velocity through the slider into the current object.
             if (osuLastObj.BaseObject is Slider && withSliderTravelDistance)
             {
                 double travelVelocity = osuLastObj.TravelDistance / osuLastObj.TravelTime; // calculate the slider velocity from slider head to slider end.
-                double movementVelocity = osuCurrObj.MinimumJumpDistance / osuCurrObj.MinimumJumpTime; // calculate the movement velocity from slider end to current object
+
+                // Need to consider snapping difficulty here as well
+                double movement = calculateSnappingDifficulty(osuCurrObj.MinimumJumpDistance, osuCurrObj, osuLastObj);
+
+                movement += osuCurrObj.MinimumJumpDistance;
+                double movementVelocity = movement / osuCurrObj.MinimumJumpTime; // calculate the movement velocity from slider end to current object
 
                 currVelocity = Math.Max(currVelocity, movementVelocity + travelVelocity); // take the larger total combined velocity.
             }
 
-            // As above, do the same for the previous hitobject.
+            // In previous velocity calculation accounting for snapping difficulty is not needed, as it's not used as a difficulty base.
             double prevVelocity = osuLastObj.LazyJumpDistance / osuLastObj.AdjustedDeltaTime;
 
             if (osuLastLastObj.BaseObject is Slider && withSliderTravelDistance)
@@ -80,10 +89,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                 if (Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) < 1.25 * Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)) // If rhythms are the same.
                 {
-                    acuteAngleBonus = calcAcuteAngleBonus(currAngle);
+                    acuteAngleBonus = CalcAcuteAngleBonus(currAngle);
 
                     // Penalize angle repetition.
-                    acuteAngleBonus *= 0.08 + 0.92 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastAngle), 3)));
+                    acuteAngleBonus *= 0.08 + 0.92 * (1 - Math.Min(acuteAngleBonus, Math.Pow(CalcAcuteAngleBonus(lastAngle), 3)));
 
                     // Apply acute angle bonus for BPM above 300 1/2 and distance more than one diameter
                     acuteAngleBonus *= angleBonus *
@@ -125,12 +134,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 }
             }
 
+            // We want to use the average velocity over the whole object when awarding differences, not the individual jump and slider path velocities.
+            prevVelocity = (osuLastObj.LazyJumpDistance + osuLastLastObj.TravelDistance) / osuLastObj.AdjustedDeltaTime;
+            currVelocity = (osuCurrObj.LazyJumpDistance + osuLastObj.TravelDistance) / osuCurrObj.AdjustedDeltaTime;
+
             if (Math.Max(prevVelocity, currVelocity) != 0)
             {
-                // We want to use the average velocity over the whole object when awarding differences, not the individual jump and slider path velocities.
-                prevVelocity = (osuLastObj.LazyJumpDistance + osuLastLastObj.TravelDistance) / osuLastObj.AdjustedDeltaTime;
-                currVelocity = (osuCurrObj.LazyJumpDistance + osuLastObj.TravelDistance) / osuCurrObj.AdjustedDeltaTime;
-
                 // Scale with ratio of difference compared to 0.5 * max dist.
                 double distRatio = DifficultyCalculationUtils.Smoothstep(Math.Abs(prevVelocity - currVelocity) / Math.Max(prevVelocity, currVelocity), 0, 1);
 
@@ -167,10 +176,56 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             return aimStrain;
         }
 
+        public static double CalculateSliderBonus(OsuDifficultyHitObject osuCurrObj)
+        {
+            if (osuCurrObj.BaseObject is Slider)
+            {
+                // Reward sliders based on velocity.
+                double sliderBonus = osuCurrObj.TravelDistance / osuCurrObj.TravelTime;
+
+                // Add high bpm bonus
+                sliderBonus *= highBpmBonus(osuCurrObj.AdjustedDeltaTime);
+
+                return sliderBonus * slider_multiplier;
+            }
+
+            return 0;
+        }
+
+        private static double calculateSnappingDifficulty(double currDistance, OsuDifficultyHitObject osuCurrObj, OsuDifficultyHitObject osuLastObj)
+        {
+            const int diameter = OsuDifficultyHitObject.NORMALISED_DIAMETER;
+
+            // Additional reward for wide angles being hard to snap on high BPM
+            double angleSnapDifficultyBonus = 0;
+            double deltaTimeThreshold = DifficultyCalculationUtils.BPMToMilliseconds(180, 2);
+
+            if (osuCurrObj.AdjustedDeltaTime < deltaTimeThreshold)
+            {
+                double bpmFactor = Math.Pow((deltaTimeThreshold - osuCurrObj.AdjustedDeltaTime) * 0.015, 2.5);
+
+                angleSnapDifficultyBonus = diameter * bpmFactor;
+
+                // We want to start reward from 60 degrees to 90 degrees on lower spacing, and form 90 degrees to 120 degrees on higher spacing
+                double highSpacingAdjust = Math.PI / 6;
+                highSpacingAdjust *= DifficultyCalculationUtils.ReverseLerp(currDistance, diameter * 2, diameter * 4);
+
+                angleSnapDifficultyBonus *= DifficultyCalculationUtils.Smoothstep(osuCurrObj.Angle ?? 0, Math.PI / 3 + highSpacingAdjust, Math.PI / 2 + highSpacingAdjust);
+            }
+
+            double bpm = DifficultyCalculationUtils.BPMToMilliseconds(osuCurrObj.AdjustedDeltaTime, 2);
+            double snapThreshold = diameter * (1 + 1.3 * DifficultyCalculationUtils.ReverseLerp(bpm, 200, 250));
+
+            // Jumps need to have some spacing to be snapped
+            double distanceSnapDifficultyBonus = currDistance < snapThreshold ? (snapThreshold * 0.65 + currDistance * 0.35) - currDistance : 0;
+
+            return distanceSnapDifficultyBonus + angleSnapDifficultyBonus;
+        }
+
         private static double highBpmBonus(double ms) => 1 / (1 - Math.Pow(0.15, ms / 1000));
 
         private static double calcWideAngleBonus(double angle) => DifficultyCalculationUtils.Smoothstep(angle, double.DegreesToRadians(40), double.DegreesToRadians(140));
 
-        private static double calcAcuteAngleBonus(double angle) => DifficultyCalculationUtils.Smoothstep(angle, double.DegreesToRadians(140), double.DegreesToRadians(40));
+        public static double CalcAcuteAngleBonus(double angle) => DifficultyCalculationUtils.Smoothstep(angle, double.DegreesToRadians(140), double.DegreesToRadians(40));
     }
 }
