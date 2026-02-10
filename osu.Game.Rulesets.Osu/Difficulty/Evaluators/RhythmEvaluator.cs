@@ -105,10 +105,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     }
                     else
                     {
-                        // bpm change is into slider, this is easy acc window
-                        if (currObj.BaseObject is Slider)
-                            effectiveRatio *= 0.5;
-
                         // repeated island polarity (2 -> 4, 3 -> 5)
                         if (island.IsSimilarPolarity(previousIsland))
                             effectiveRatio *= 0.5;

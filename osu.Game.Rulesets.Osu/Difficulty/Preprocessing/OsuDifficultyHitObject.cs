@@ -194,6 +194,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             return 0;
         }
 
+        public override double HitWindow(HitResult hitResult)
+        {
+            bool isNonBreakHitResult = hitResult is HitResult.Great or HitResult.Ok or HitResult.Meh;
+
+            // Assuming classic sliders, slider heads always have the full hit window to hit a 300.
+            // Knowing that, return the Meh hit window (the lowest non-break hit result) for sliders.
+            // Once real time difficulty calculation is supported, this should check for classic slider behaviour.
+            if (BaseObject is Slider && isNonBreakHitResult)
+                return base.HitWindow(HitResult.Meh);
+
+            return base.HitWindow(hitResult);
+        }
+
         private void setDistances(double clockRate)
         {
             if (BaseObject is Slider currentSlider)
