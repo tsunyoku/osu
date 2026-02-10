@@ -160,15 +160,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     // Begin counting island until we change speed again.
                     firstDeltaSwitch = true;
 
-                    // bpm change is into slider, this is easy acc window
-                    if (currObj.BaseObject is Slider)
-                        effectiveRatio *= 0.6;
-
-                    // bpm change was from a slider, this is easier typically than circle -> circle
-                    // unintentional side effect is that bursts with kicksliders at the ends might have lower difficulty than bursts without sliders
-                    if (prevObj.BaseObject is Slider)
-                        effectiveRatio *= 0.6;
-
                     startRatio = effectiveRatio;
 
                     island = new Island((int)currDelta, deltaDifferenceEpsilon);
