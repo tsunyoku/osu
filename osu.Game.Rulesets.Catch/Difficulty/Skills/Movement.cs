@@ -2,12 +2,12 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Catch.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 {
-    public class Movement : StrainDecaySkill
+    public class Movement : StrainDecaySkill<CatchDifficultyHitObject>
     {
         protected override double SkillMultiplier => 1;
         protected override double StrainDecayBase => 0.2;
@@ -16,7 +16,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 
         protected override int SectionLength => 750;
 
-        protected override double StrainValueOf(DifficultyHitObject current)
+        protected override double StrainValueOf(CatchDifficultyHitObject current)
         {
             return MovementEvaluator.EvaluateDifficultyOf(current);
         }

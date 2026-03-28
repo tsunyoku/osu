@@ -12,20 +12,20 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Pippidon
 {
-    public class PippidonDifficultyCalculator : DifficultyCalculator
+    public class PippidonDifficultyCalculator : DifficultyCalculator<DifficultyHitObject>
     {
         public PippidonDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap)
             : base(ruleset, beatmap)
         {
         }
 
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill[] skills)
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill<DifficultyHitObject>[] skills)
         {
             return new DifficultyAttributes(mods, 0);
         }
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods) => Enumerable.Empty<DifficultyHitObject>();
 
-        protected override ISkill[] CreateSkills(IBeatmap beatmap, Mod[] mods) => Array.Empty<ISkill>();
+        protected override ISkill<DifficultyHitObject>[] CreateSkills(IBeatmap beatmap, Mod[] mods) => Array.Empty<ISkill<DifficultyHitObject>>();
     }
 }

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Colour;
@@ -69,10 +68,9 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
         /// <summary>
         /// Evaluate the difficulty of the first hitobject within a colour streak.
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject hitObject)
+        public static double EvaluateDifficultyOf(TaikoDifficultyHitObject hitObject)
         {
-            var taikoObject = (TaikoDifficultyHitObject)hitObject;
-            TaikoColourData colourData = taikoObject.ColourData;
+            TaikoColourData colourData = hitObject.ColourData;
             double difficulty = 0.0d;
 
             if (colourData.MonoStreak?.FirstHitObject == hitObject) // Difficulty for MonoStreak
@@ -84,7 +82,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
             if (colourData.RepeatingHitPattern?.FirstHitObject == hitObject) // Difficulty for RepeatingHitPattern
                 difficulty += evaluateRepeatingHitPatternsDifficulty(colourData.RepeatingHitPattern);
 
-            double consistencyPenalty = consistentRatioPenalty(taikoObject);
+            double consistencyPenalty = consistentRatioPenalty(hitObject);
             difficulty *= consistencyPenalty;
 
             return difficulty;

@@ -7,6 +7,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Input.Bindings;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty;
+using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Pippidon.Beatmaps;
 using osu.Game.Rulesets.Pippidon.Mods;
@@ -25,7 +26,7 @@ namespace osu.Game.Rulesets.Pippidon
         public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) =>
             new PippidonBeatmapConverter(beatmap, this);
 
-        public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) =>
+        public override DifficultyCalculator<DifficultyHitObject> CreateDifficultyCalculator(IWorkingBeatmap beatmap) =>
             new PippidonDifficultyCalculator(RulesetInfo, beatmap);
 
         public override IEnumerable<Mod> GetModsFor(ModType type)

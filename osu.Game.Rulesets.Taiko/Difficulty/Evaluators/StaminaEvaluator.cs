@@ -14,7 +14,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
         /// Evaluates the minimum mechanical stamina required to play the current object. This is calculated using the
         /// maximum possible interval between two hits using the same key, by alternating available fingers for each colour.
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current)
+        public static double EvaluateDifficultyOf(TaikoDifficultyHitObject current)
         {
             if (current.BaseObject is not Hit)
             {
@@ -23,15 +23,14 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
 
             // Find the previous hit object hit by the current finger, which is n notes prior, n being the number of
             // available fingers.
-            TaikoDifficultyHitObject taikoCurrent = (TaikoDifficultyHitObject)current;
-            TaikoDifficultyHitObject? taikoPrevious = current.Previous(1) as TaikoDifficultyHitObject;
-            TaikoDifficultyHitObject? previousMono = taikoCurrent.PreviousMono(availableFingersFor(taikoCurrent) - 1);
+            TaikoDifficultyHitObject? previous = current.Previous(1) as TaikoDifficultyHitObject;
+            TaikoDifficultyHitObject? previousMono = current.PreviousMono(availableFingersFor(current) - 1);
 
             double objectStrain = 0.5; // Add a base strain to all objects
-            if (taikoPrevious == null) return objectStrain;
+            if (previous == null) return objectStrain;
 
             if (previousMono != null)
-                objectStrain += speedBonus(taikoCurrent.StartTime - previousMono.StartTime) + 0.5 * speedBonus(taikoCurrent.StartTime - taikoPrevious.StartTime);
+                objectStrain += speedBonus(current.StartTime - previousMono.StartTime) + 0.5 * speedBonus(current.StartTime - previous.StartTime);
 
             return objectStrain;
         }

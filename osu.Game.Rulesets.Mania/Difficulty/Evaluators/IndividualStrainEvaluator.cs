@@ -2,23 +2,21 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using osu.Framework.Utils;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mania.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Mania.Difficulty.Evaluators
 {
     public class IndividualStrainEvaluator
     {
-        public static double EvaluateDifficultyOf(DifficultyHitObject current)
+        public static double EvaluateDifficultyOf(ManiaDifficultyHitObject current)
         {
-            var maniaCurrent = (ManiaDifficultyHitObject)current;
-            double startTime = maniaCurrent.StartTime;
-            double endTime = maniaCurrent.EndTime;
+            double startTime = current.StartTime;
+            double endTime = current.EndTime;
 
             double holdFactor = 1.0; // Factor to all additional strains in case something else is held
 
             // We award a bonus if this note starts and ends before the end of another hold note.
-            foreach (var maniaPrevious in maniaCurrent.PreviousHitObjects)
+            foreach (var maniaPrevious in current.PreviousHitObjects)
             {
                 if (maniaPrevious is null)
                     continue;

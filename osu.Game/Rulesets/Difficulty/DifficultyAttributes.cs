@@ -10,7 +10,7 @@ using osu.Game.Rulesets.Mods;
 namespace osu.Game.Rulesets.Difficulty
 {
     /// <summary>
-    /// Describes the difficulty of a beatmap, as output by a <see cref="DifficultyCalculator"/>.
+    /// Describes the difficulty of a beatmap, as output by a <see cref="IDifficultyCalculator"/>.
     /// </summary>
     [JsonObject(MemberSerialization.OptIn)]
     public class DifficultyAttributes

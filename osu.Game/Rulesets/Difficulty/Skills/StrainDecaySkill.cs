@@ -10,7 +10,8 @@ namespace osu.Game.Rulesets.Difficulty.Skills
     /// Used to processes strain values of <see cref="DifficultyHitObject"/>s, keep track of strain levels caused by the processed objects
     /// and to calculate a final difficulty value representing the difficulty of hitting all the processed objects.
     /// </summary>
-    public abstract class StrainDecaySkill : StrainSkill
+    public abstract class StrainDecaySkill<T> : StrainSkill<T>
+        where T : DifficultyHitObject
     {
         /// <summary>
         /// Strain values are multiplied by this number for the given skill. Used to balance the value of different skills between each other.
@@ -28,9 +29,9 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         protected double CurrentStrain { get; private set; }
 
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => CurrentStrain * strainDecay(time - current.Previous(0).StartTime);
+        protected override double CalculateInitialStrain(double time, T current) => CurrentStrain * strainDecay(time - current.Previous(0).StartTime);
 
-        protected override double StrainValueAt(DifficultyHitObject current)
+        protected override double StrainValueAt(T current)
         {
             CurrentStrain *= strainDecay(current.DeltaTime);
             CurrentStrain += StrainValueOf(current) * SkillMultiplier;
@@ -41,7 +42,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// <summary>
         /// Calculates the strain value of a <see cref="DifficultyHitObject"/>. This value is affected by previously processed objects.
         /// </summary>
-        protected abstract double StrainValueOf(DifficultyHitObject current);
+        protected abstract double StrainValueOf(T current);
 
         private double strainDecay(double ms) => Math.Pow(StrainDecayBase, ms / 1000);
     }

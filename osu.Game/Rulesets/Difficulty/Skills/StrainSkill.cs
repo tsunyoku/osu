@@ -12,7 +12,8 @@ namespace osu.Game.Rulesets.Difficulty.Skills
     /// Used to processes strain values of <see cref="DifficultyHitObject"/>s, keep track of strain levels caused by the processed objects
     /// and to calculate a final difficulty value representing the difficulty of hitting all the processed objects.
     /// </summary>
-    public abstract class StrainSkill : ISkill, IHasObjectDifficulties
+    public abstract class StrainSkill<T> : ISkill<T>, IHasObjectDifficulties
+        where T : DifficultyHitObject
     {
         /// <summary>
         /// The weight by which each strain value decays.
@@ -34,10 +35,10 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// <summary>
         /// Returns the strain value at <see cref="DifficultyHitObject"/>. This value is calculated with or without respect to previous objects.
         /// </summary>
-        protected abstract double StrainValueAt(DifficultyHitObject current);
+        protected abstract double StrainValueAt(T current);
 
         /// <inheritdoc />
-        public void Process(DifficultyHitObject current)
+        public void Process(T current)
         {
             // The first object doesn't generate a strain, so we begin with an incremented section end
             if (current.Index == 0)
@@ -87,7 +88,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         /// <param name="time">The beginning of the new section in milliseconds.</param>
         /// <param name="current">The current hit object.</param>
-        private void startNewSectionFrom(double time, DifficultyHitObject current)
+        private void startNewSectionFrom(double time, T current)
         {
             // The maximum strain of the new section is not zero by default
             // This means we need to capture the strain level at the beginning of the new section, and use that as the initial peak level.
@@ -100,7 +101,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// <param name="time">The time to retrieve the peak strain at.</param>
         /// <param name="current">The current hit object.</param>
         /// <returns>The peak strain.</returns>
-        protected abstract double CalculateInitialStrain(double time, DifficultyHitObject current);
+        protected abstract double CalculateInitialStrain(double time, T current);
 
         /// <summary>
         /// Returns a live enumerable of the peak strains for each <see cref="SectionLength"/> section of the beatmap,

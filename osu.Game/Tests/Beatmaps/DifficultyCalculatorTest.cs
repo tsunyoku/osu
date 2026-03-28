@@ -1,8 +1,6 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-#nullable disable
-
 using System.IO;
 using System.Reflection;
 using NUnit.Framework;
@@ -54,10 +52,10 @@ namespace osu.Game.Tests.Beatmaps
         private Stream openResource(string name)
         {
             string localPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location).AsNonNull();
-            return Assembly.LoadFrom(Path.Combine(localPath, $"{ResourceAssembly}.dll")).GetManifestResourceStream($@"{ResourceAssembly}.Resources.{name}");
+            return Assembly.LoadFrom(Path.Combine(localPath, $"{ResourceAssembly}.dll")).GetManifestResourceStream($@"{ResourceAssembly}.Resources.{name}")!;
         }
 
-        protected abstract DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap);
+        protected abstract IDifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap);
 
         protected abstract Ruleset CreateRuleset();
     }

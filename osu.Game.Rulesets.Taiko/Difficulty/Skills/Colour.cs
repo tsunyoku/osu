@@ -4,13 +4,14 @@
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Taiko.Difficulty.Evaluators;
+using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 {
     /// <summary>
     /// Calculates the colour coefficient of taiko difficulty.
     /// </summary>
-    public class Colour : StrainDecaySkill
+    public class Colour : StrainDecaySkill<TaikoDifficultyHitObject>
     {
         protected override double SkillMultiplier => 0.12;
 
@@ -19,7 +20,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
         // slower maps.
         protected override double StrainDecayBase => 0.8;
 
-        protected override double StrainValueOf(DifficultyHitObject current)
+        protected override double StrainValueOf(TaikoDifficultyHitObject current)
         {
             return ColourEvaluator.EvaluateDifficultyOf(current);
         }

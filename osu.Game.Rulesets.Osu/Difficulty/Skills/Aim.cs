@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Utils;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Mods;
@@ -19,7 +18,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// <summary>
     /// Represents the skill required to correctly aim at every object in the map with a uniform CircleSize and normalized distances.
     /// </summary>
-    public class Aim : VariableLengthStrainSkill
+    public class Aim : VariableLengthStrainSkill<OsuDifficultyHitObject>
     {
         private readonly Mod[] mods;
 
@@ -54,12 +53,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double strainDecay(double ms) => Math.Pow(0.2, ms / 1000);
 
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) =>
+        protected override double CalculateInitialStrain(double time, OsuDifficultyHitObject current) =>
             currentStrain * strainDecay(time - current.Previous(0).StartTime);
 
-        protected override double StrainValueAt(DifficultyHitObject current)
+        protected override double StrainValueAt(OsuDifficultyHitObject current)
         {
-            double decay = strainDecay(((OsuDifficultyHitObject)current).AdjustedDeltaTime);
+            double decay = strainDecay(current.AdjustedDeltaTime);
 
             double snapDifficulty = SnapAimEvaluator.EvaluateDifficultyOf(current, IncludeSliders) * skillMultiplierSnap;
             double agilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(current) * skillMultiplierAgility;

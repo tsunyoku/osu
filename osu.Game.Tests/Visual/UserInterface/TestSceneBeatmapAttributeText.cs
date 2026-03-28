@@ -188,7 +188,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap)
                 => new OsuRuleset().CreateBeatmapConverter(beatmap);
 
-            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap)
+            public override IDifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap)
                 => new TestDifficultyCalculator(new TestRuleset().RulesetInfo, beatmap);
 
             public override PerformanceCalculator CreatePerformanceCalculator()
@@ -201,21 +201,21 @@ namespace osu.Game.Tests.Visual.UserInterface
             public override string ShortName => string.Empty;
         }
 
-        private class TestDifficultyCalculator : DifficultyCalculator
+        private class TestDifficultyCalculator : DifficultyCalculator<DifficultyHitObject>
         {
             public TestDifficultyCalculator(IRulesetInfo ruleset, IWorkingBeatmap beatmap)
                 : base(ruleset, beatmap)
             {
             }
 
-            protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill[] skills)
+            protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill<DifficultyHitObject>[] skills)
                 => new DifficultyAttributes(mods, mods.OfType<TestMod>().SingleOrDefault()?.Difficulty.Value ?? 0);
 
             protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
                 => Array.Empty<DifficultyHitObject>();
 
-            protected override ISkill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
-                => Array.Empty<ISkill>();
+            protected override ISkill<DifficultyHitObject>[] CreateSkills(IBeatmap beatmap, Mod[] mods)
+                => Array.Empty<ISkill<DifficultyHitObject>>();
         }
 
         private class TestPerformanceCalculator : PerformanceCalculator

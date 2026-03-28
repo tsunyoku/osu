@@ -10,11 +10,12 @@ using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
+using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Mods;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
-    public class Reading : HarmonicSkill
+    public class Reading : HarmonicSkill<OsuDifficultyHitObject>
     {
         private readonly List<DifficultyHitObject> objectList = new List<DifficultyHitObject>();
 
@@ -32,7 +33,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
-        protected override double ObjectDifficultyOf(DifficultyHitObject current)
+        protected override double ObjectDifficultyOf(OsuDifficultyHitObject current)
         {
             objectList.Add(current);
 

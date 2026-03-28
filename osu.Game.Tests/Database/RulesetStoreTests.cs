@@ -220,7 +220,7 @@ namespace osu.Game.Tests.Database
                 return new OsuBeatmapConverter(beatmap, new OsuRuleset());
             }
 
-            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap)
+            public override IDifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap)
             {
                 if (!HasImplementations)
                     throw new NotImplementedException();

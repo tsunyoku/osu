@@ -70,13 +70,13 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing
         /// <param name="controlPointInfo">The control point info of the beatmap.</param>
         /// <param name="globalSliderVelocity">The global slider velocity of the beatmap.</param>
         public TaikoDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate,
-                                        List<DifficultyHitObject> objects,
+                                        List<TaikoDifficultyHitObject> objects,
                                         List<TaikoDifficultyHitObject> centreHitObjects,
                                         List<TaikoDifficultyHitObject> rimHitObjects,
                                         List<TaikoDifficultyHitObject> noteObjects, int index,
                                         ControlPointInfo controlPointInfo,
                                         double globalSliderVelocity)
-            : base(hitObject, lastObject, clockRate, objects, index)
+            : base(hitObject, lastObject, clockRate, objects.Cast<DifficultyHitObject>().ToList(), index)
         {
             noteDifficultyHitObjects = noteObjects;
 

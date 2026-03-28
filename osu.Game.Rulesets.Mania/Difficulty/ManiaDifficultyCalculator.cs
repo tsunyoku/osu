@@ -7,7 +7,6 @@ using System.Linq;
 using osu.Game.Beatmaps;
 using osu.Game.Extensions;
 using osu.Game.Rulesets.Difficulty;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mania.Beatmaps;
 using osu.Game.Rulesets.Mania.Difficulty.Preprocessing;
@@ -23,7 +22,7 @@ using osu.Game.Utils;
 
 namespace osu.Game.Rulesets.Mania.Difficulty
 {
-    public class ManiaDifficultyCalculator : DifficultyCalculator
+    public class ManiaDifficultyCalculator : DifficultyCalculator<ManiaDifficultyHitObject>
     {
         private const double difficulty_multiplier = 0.018;
 
@@ -37,7 +36,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             isForCurrentRuleset = beatmap.BeatmapInfo.Ruleset.MatchesOnlineID(ruleset);
         }
 
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill[] skills)
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill<ManiaDifficultyHitObject>[] skills)
         {
             if (beatmap.HitObjects.Count == 0)
                 return new ManiaDifficultyAttributes { Mods = mods };
@@ -63,7 +62,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty
             return 1;
         }
 
-        protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
+        protected override IEnumerable<ManiaDifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
         {
             var sortedObjects = beatmap.HitObjects.ToArray();
             int totalColumns = ((ManiaBeatmap)beatmap).TotalColumns;
@@ -72,11 +71,11 @@ namespace osu.Game.Rulesets.Mania.Difficulty
 
             LegacySortHelper<HitObject>.Sort(sortedObjects, Comparer<HitObject>.Create((a, b) => (int)Math.Round(a.StartTime) - (int)Math.Round(b.StartTime)));
 
-            List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
-            List<DifficultyHitObject>[] perColumnObjects = new List<DifficultyHitObject>[totalColumns];
+            List<ManiaDifficultyHitObject> objects = new List<ManiaDifficultyHitObject>();
+            List<ManiaDifficultyHitObject>[] perColumnObjects = new List<ManiaDifficultyHitObject>[totalColumns];
 
             for (int column = 0; column < totalColumns; column++)
-                perColumnObjects[column] = new List<DifficultyHitObject>();
+                perColumnObjects[column] = new List<ManiaDifficultyHitObject>();
 
             for (int i = 1; i < sortedObjects.Length; i++)
             {
@@ -89,9 +88,9 @@ namespace osu.Game.Rulesets.Mania.Difficulty
         }
 
         // Sorting is done in CreateDifficultyHitObjects, since the full list of hitobjects is required.
-        protected override IEnumerable<DifficultyHitObject> SortObjects(IEnumerable<DifficultyHitObject> input) => input;
+        protected override IEnumerable<ManiaDifficultyHitObject> SortObjects(IEnumerable<ManiaDifficultyHitObject> input) => input;
 
-        protected override ISkill[] CreateSkills(IBeatmap beatmap, Mod[] mods) => new ISkill[]
+        protected override ISkill<ManiaDifficultyHitObject>[] CreateSkills(IBeatmap beatmap, Mod[] mods) => new ISkill<ManiaDifficultyHitObject>[]
         {
             new Strain(((ManiaBeatmap)Beatmap).TotalColumns)
         };

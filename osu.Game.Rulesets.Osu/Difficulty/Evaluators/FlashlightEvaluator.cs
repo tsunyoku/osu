@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Mods;
@@ -32,13 +31,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// <item><description>and whether the hidden mod is enabled.</description></item>
         /// </list>
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current, IReadOnlyList<Mod> mods)
+        public static double EvaluateDifficultyOf(OsuDifficultyHitObject current, IReadOnlyList<Mod> mods)
         {
             if (current.BaseObject is Spinner)
                 return 0;
 
-            var osuCurrent = (OsuDifficultyHitObject)current;
-            var osuHitObject = (OsuHitObject)(osuCurrent.BaseObject);
+            var osuHitObject = (OsuHitObject)current.BaseObject;
 
             double scalingFactor = 52.0 / osuHitObject.Radius;
             double smallDistNerf = 1.0;
@@ -46,7 +44,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double result = 0.0;
 
-            OsuDifficultyHitObject lastObj = osuCurrent;
+            OsuDifficultyHitObject lastObj = current;
 
             double angleRepeatCount = 0.0;
 
@@ -70,14 +68,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     double stackNerf = Math.Min(1.0, (currentObj.LazyJumpDistance / scalingFactor) / 25.0);
 
                     // Bonus based on how visible the object is.
-                    double opacityBonus = 1.0 + max_opacity_bonus * (1.0 - osuCurrent.OpacityAt(currentHitObject.StartTime, mods.OfType<OsuModHidden>().Any(m => !m.OnlyFadeApproachCircles.Value)));
+                    double opacityBonus = 1.0 + max_opacity_bonus * (1.0 - current.OpacityAt(currentHitObject.StartTime, mods.OfType<OsuModHidden>().Any(m => !m.OnlyFadeApproachCircles.Value)));
 
                     result += stackNerf * opacityBonus * scalingFactor * jumpDistance / cumulativeStrainTime;
 
-                    if (currentObj.Angle != null && osuCurrent.Angle != null)
+                    if (currentObj.Angle != null && current.Angle != null)
                     {
                         // Objects further back in time should count less for the nerf.
-                        if (Math.Abs(currentObj.Angle.Value - osuCurrent.Angle.Value) < 0.02)
+                        if (Math.Abs(currentObj.Angle.Value - current.Angle.Value) < 0.02)
                             angleRepeatCount += Math.Max(1.0 - 0.1 * i, 0.0);
                     }
                 }
@@ -96,13 +94,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double sliderBonus = 0.0;
 
-            if (osuCurrent.BaseObject is Slider osuSlider)
+            if (current.BaseObject is Slider osuSlider)
             {
                 // Invert the scaling factor to determine the true travel distance independent of circle size.
-                double pixelTravelDistance = osuCurrent.LazyTravelDistance / scalingFactor;
+                double pixelTravelDistance = current.LazyTravelDistance / scalingFactor;
 
                 // Reward sliders based on velocity.
-                sliderBonus = Math.Pow(Math.Max(0.0, pixelTravelDistance / osuCurrent.TravelTime - min_velocity), 0.5);
+                sliderBonus = Math.Pow(Math.Max(0.0, pixelTravelDistance / current.TravelTime - min_velocity), 0.5);
 
                 // Longer sliders require more memorisation.
                 sliderBonus *= pixelTravelDistance;

@@ -12,14 +12,13 @@ using osu.Game.Rulesets.Catch.Mods;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Catch.UI;
 using osu.Game.Rulesets.Difficulty;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Utils;
 
 namespace osu.Game.Rulesets.Catch.Difficulty
 {
-    public class CatchDifficultyCalculator : DifficultyCalculator
+    public class CatchDifficultyCalculator : DifficultyCalculator<CatchDifficultyHitObject>
     {
         private const double difficulty_multiplier = 4.59;
 
@@ -30,7 +29,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
         {
         }
 
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill[] skills)
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill<CatchDifficultyHitObject>[] skills)
         {
             if (beatmap.HitObjects.Count == 0)
                 return new CatchDifficultyAttributes { Mods = mods };
@@ -45,11 +44,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             return attributes;
         }
 
-        protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
+        protected override IEnumerable<CatchDifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
         {
             CatchHitObject? lastObject = null;
 
-            List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
+            List<CatchDifficultyHitObject> objects = new List<CatchDifficultyHitObject>();
 
             double clockRate = ModUtils.CalculateRateWithMods(mods);
 
@@ -74,9 +73,9 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             return objects;
         }
 
-        protected override ISkill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
+        protected override ISkill<CatchDifficultyHitObject>[] CreateSkills(IBeatmap beatmap, Mod[] mods)
         {
-            return new ISkill[]
+            return new ISkill<CatchDifficultyHitObject>[]
             {
                 new Movement(),
             };

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Skills;
@@ -16,7 +15,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// <summary>
     /// Represents the skill required to press keys with regards to keeping up with the speed at which objects need to be hit.
     /// </summary>
-    public class Speed : HarmonicSkill
+    public class Speed : HarmonicSkill<OsuDifficultyHitObject>
     {
         private double skillMultiplier => 1.16;
 
@@ -31,9 +30,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
-        protected override double ObjectDifficultyOf(DifficultyHitObject current)
+        protected override double ObjectDifficultyOf(OsuDifficultyHitObject current)
         {
-            double decay = strainDecay(((OsuDifficultyHitObject)current).AdjustedDeltaTime);
+            double decay = strainDecay(current.AdjustedDeltaTime);
 
             currentDifficulty *= decay;
             currentDifficulty += SpeedEvaluator.EvaluateDifficultyOf(current) * (1 - decay) * skillMultiplier;

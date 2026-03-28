@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
@@ -18,12 +17,12 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Evaluators
         /// <summary>
         /// Evaluate the difficulty of a hitobject considering its interval change.
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject hitObject)
+        public static double EvaluateDifficultyOf(TaikoDifficultyHitObject hitObject)
         {
             if (hitObject.BaseObject is not Hit)
                 return 0;
 
-            TaikoRhythmData rhythmData = ((TaikoDifficultyHitObject)hitObject).RhythmData;
+            TaikoRhythmData rhythmData = hitObject.RhythmData;
             double difficulty = 0.0d;
 
             double sameRhythm = 0;

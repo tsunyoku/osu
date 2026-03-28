@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
@@ -59,8 +60,8 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Preprocessing
         /// </summary>
         public readonly double StrainTime;
 
-        public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, float halfCatcherWidth, List<DifficultyHitObject> objects, int index)
-            : base(hitObject, lastObject, clockRate, objects, index)
+        public CatchDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, float halfCatcherWidth, List<CatchDifficultyHitObject> objects, int index)
+            : base(hitObject, lastObject, clockRate, objects.Cast<DifficultyHitObject>().ToList(), index)
         {
             // We will scale everything by this factor, so we can assume a uniform CircleSize among beatmaps.
             float scalingFactor = NORMALIZED_HALF_CATCHER_WIDTH / halfCatcherWidth;

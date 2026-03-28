@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Collections.Generic;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Colour.Data;
 using osu.Game.Rulesets.Taiko.Objects;
 
@@ -17,7 +16,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Colour
         /// Processes and encodes a list of <see cref="TaikoDifficultyHitObject"/>s into a list of <see cref="TaikoColourData"/>s,
         /// assigning the appropriate <see cref="TaikoColourData"/>s to each <see cref="TaikoDifficultyHitObject"/>.
         /// </summary>
-        public static void ProcessAndAssign(List<DifficultyHitObject> hitObjects)
+        public static void ProcessAndAssign(List<TaikoDifficultyHitObject> hitObjects)
         {
             List<RepeatingHitPatterns> hitPatterns = encode(hitObjects);
 
@@ -53,7 +52,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Colour
         /// <summary>
         /// Encodes a list of <see cref="TaikoDifficultyHitObject"/>s into a list of <see cref="RepeatingHitPatterns"/>s.
         /// </summary>
-        private static List<RepeatingHitPatterns> encode(List<DifficultyHitObject> data)
+        private static List<RepeatingHitPatterns> encode(List<TaikoDifficultyHitObject> data)
         {
             List<MonoStreak> monoStreaks = encodeMonoStreak(data);
             List<AlternatingMonoPattern> alternatingMonoPatterns = encodeAlternatingMonoPattern(monoStreaks);
@@ -65,14 +64,14 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Preprocessing.Colour
         /// <summary>
         /// Encodes a list of <see cref="TaikoDifficultyHitObject"/>s into a list of <see cref="MonoStreak"/>s.
         /// </summary>
-        private static List<MonoStreak> encodeMonoStreak(List<DifficultyHitObject> data)
+        private static List<MonoStreak> encodeMonoStreak(List<TaikoDifficultyHitObject> data)
         {
             List<MonoStreak> monoStreaks = new List<MonoStreak>();
             MonoStreak? currentMonoStreak = null;
 
             for (int i = 0; i < data.Count; i++)
             {
-                TaikoDifficultyHitObject taikoObject = (TaikoDifficultyHitObject)data[i];
+                TaikoDifficultyHitObject taikoObject = data[i];
 
                 // This ignores all non-note objects, which may or may not be the desired behaviour
                 TaikoDifficultyHitObject? previousObject = taikoObject.PreviousNote(0);

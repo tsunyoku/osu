@@ -9,7 +9,8 @@ using osu.Game.Rulesets.Difficulty.Utils;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
-    public abstract class HarmonicSkill : ISkill, IHasObjectDifficulties
+    public abstract class HarmonicSkill<T> : ISkill<T>, IHasObjectDifficulties
+        where T : DifficultyHitObject
     {
         /// <summary>
         /// The sum of note weights, calculated during summation.
@@ -34,9 +35,9 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// <summary>
         /// Returns the difficulty value of the current <see cref="DifficultyHitObject"/>. This value is calculated with or without respect to previous objects.
         /// </summary>
-        protected abstract double ObjectDifficultyOf(DifficultyHitObject current);
+        protected abstract double ObjectDifficultyOf(T current);
 
-        public void Process(DifficultyHitObject current)
+        public void Process(T current)
         {
             double difficulty = ObjectDifficultyOf(current);
             ObjectDifficulties.Add(difficulty);

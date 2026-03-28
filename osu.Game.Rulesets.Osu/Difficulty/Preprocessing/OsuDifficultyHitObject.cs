@@ -130,11 +130,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         private readonly OsuDifficultyHitObject? lastLastDifficultyObject;
         private readonly OsuDifficultyHitObject? lastDifficultyObject;
 
-        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, int index)
-            : base(hitObject, lastObject, clockRate, objects, index)
+        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<OsuDifficultyHitObject> objects, int index)
+            : base(hitObject, lastObject, clockRate, objects.Cast<DifficultyHitObject>().ToList(), index)
         {
-            lastLastDifficultyObject = index > 1 ? (OsuDifficultyHitObject)objects[index - 2] : null;
-            lastDifficultyObject = index > 0 ? (OsuDifficultyHitObject)objects[index - 1] : null;
+            lastLastDifficultyObject = index > 1 ? objects[index - 2] : null;
+            lastDifficultyObject = index > 0 ? objects[index - 1] : null;
 
             // Capped to 25ms to prevent difficulty calculation breaking from simultaneous objects.
             AdjustedDeltaTime = Math.Max(DeltaTime, MIN_DELTA_TIME);

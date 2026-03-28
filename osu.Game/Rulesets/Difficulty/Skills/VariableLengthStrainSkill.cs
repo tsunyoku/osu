@@ -10,10 +10,11 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
     /// <summary>
-    /// Similar to <see cref="StrainSkill"/>, but instead of strains having a fixed length, strains can be any length.
+    /// Similar to <see cref="StrainSkill{T}"/>, but instead of strains having a fixed length, strains can be any length.
     /// A new <see cref="StrainPeak"/> is created for each <see cref="DifficultyHitObject"/>.
     /// </summary>
-    public abstract class VariableLengthStrainSkill : ISkill, IHasObjectDifficulties
+    public abstract class VariableLengthStrainSkill<T> : ISkill<T>, IHasObjectDifficulties
+        where T : DifficultyHitObject
     {
         /// <summary>
         /// The weight by which each strain value decays.
@@ -52,10 +53,10 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// <summary>
         /// Returns the strain value at <see cref="DifficultyHitObject"/>. This value is calculated with or without respect to previous objects.
         /// </summary>
-        protected abstract double StrainValueAt(DifficultyHitObject current);
+        protected abstract double StrainValueAt(T current);
 
         /// <inheritdoc />
-        public void Process(DifficultyHitObject current)
+        public void Process(T current)
         {
             // If we're on the first object, set up the first section to end `MaxSectionLength` after it.
             if (current.Index == 0)
@@ -103,7 +104,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// Fills the space between the end of the current section and the current object, if there is any.
         /// </summary>
         /// <param name="current">The object who's <see cref="DifficultyHitObject.StartTime"/> is backfilled to.</param>
-        private void backfillPeaks(DifficultyHitObject current)
+        private void backfillPeaks(T current)
         {
             // If the current object starts after the current section ends
             // then we want to start a new section without any harsh drop-off.
@@ -165,7 +166,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         /// <param name="time">The beginning of the new section in milliseconds.</param>
         /// <param name="current">The current hit object.</param>
-        private void startNewSectionFrom(double time, DifficultyHitObject current)
+        private void startNewSectionFrom(double time, T current)
         {
             // The maximum strain of the new section is not zero by default
             // This means we need to capture the strain level at the beginning of the new section, and use that as the initial peak level.
@@ -178,7 +179,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// <param name="time">The time to retrieve the peak strain at.</param>
         /// <param name="current">The current hit object.</param>
         /// <returns>The peak strain.</returns>
-        protected abstract double CalculateInitialStrain(double time, DifficultyHitObject current);
+        protected abstract double CalculateInitialStrain(double time, T current);
 
         /// <summary>
         /// Returns a live enumerable of the peak strains for each <see cref="MaxSectionLength"/> section of the beatmap,

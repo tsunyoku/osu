@@ -22,7 +22,7 @@ namespace osu.Game.Rulesets
         public string InstantiationInfo { get; set; } = string.Empty;
 
         /// <summary>
-        /// Stores the last applied <see cref="DifficultyCalculator.Version"/>
+        /// Stores the last applied <see cref="IDifficultyCalculator.Version"/>
         /// </summary>
         public int LastAppliedDifficultyVersion { get; set; }
 

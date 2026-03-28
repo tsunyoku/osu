@@ -1,6 +1,7 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.IO;
 using BenchmarkDotNet.Attributes;
 using osu.Framework.IO.Stores;
@@ -10,6 +11,7 @@ using osu.Game.IO.Archives;
 using osu.Game.Rulesets.Catch;
 using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Mania;
+using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu;
 using osu.Game.Rulesets.Taiko;
 using osu.Game.Tests.Resources;
@@ -18,10 +20,10 @@ namespace osu.Game.Benchmarks
 {
     public class BenchmarkDifficultyCalculation : BenchmarkTest
     {
-        private DifficultyCalculator osuCalculator = null!;
-        private DifficultyCalculator taikoCalculator = null!;
-        private DifficultyCalculator catchCalculator = null!;
-        private DifficultyCalculator maniaCalculator = null!;
+        private IDifficultyCalculator osuCalculator = null!;
+        private IDifficultyCalculator taikoCalculator = null!;
+        private IDifficultyCalculator catchCalculator = null!;
+        private IDifficultyCalculator maniaCalculator = null!;
 
         public override void SetUp()
         {
@@ -54,23 +56,23 @@ namespace osu.Game.Benchmarks
         }
 
         [Benchmark]
-        public void CalculateDifficultyOsu() => osuCalculator.Calculate();
+        public void CalculateDifficultyOsu() => osuCalculator.Calculate(Array.Empty<Mod>());
 
         [Benchmark]
-        public void CalculateDifficultyTaiko() => taikoCalculator.Calculate();
+        public void CalculateDifficultyTaiko() => taikoCalculator.Calculate(Array.Empty<Mod>());
 
         [Benchmark]
-        public void CalculateDifficultyCatch() => catchCalculator.Calculate();
+        public void CalculateDifficultyCatch() => catchCalculator.Calculate(Array.Empty<Mod>());
 
         [Benchmark]
-        public void CalculateDifficultyMania() => maniaCalculator.Calculate();
+        public void CalculateDifficultyMania() => maniaCalculator.Calculate(Array.Empty<Mod>());
 
         [Benchmark]
         public void CalculateDifficultyOsuHundredTimes()
         {
             for (int i = 0; i < 100; i++)
             {
-                osuCalculator.Calculate();
+                osuCalculator.Calculate(Array.Empty<Mod>());
             }
         }
     }

@@ -2,14 +2,13 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mania.Difficulty.Evaluators;
 using osu.Game.Rulesets.Mania.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 {
-    public class Strain : StrainDecaySkill
+    public class Strain : StrainDecaySkill<ManiaDifficultyHitObject>
     {
         private const double individual_decay_base = 0.125;
         private const double overall_decay_base = 0.30;
@@ -27,25 +26,23 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             overallStrain = 1;
         }
 
-        protected override double StrainValueOf(DifficultyHitObject current)
+        protected override double StrainValueOf(ManiaDifficultyHitObject current)
         {
-            var maniaCurrent = (ManiaDifficultyHitObject)current;
-
-            individualStrains[maniaCurrent.Column] = applyDecay(individualStrains[maniaCurrent.Column], maniaCurrent.ColumnStrainTime, individual_decay_base);
-            individualStrains[maniaCurrent.Column] += IndividualStrainEvaluator.EvaluateDifficultyOf(current);
+            individualStrains[current.Column] = applyDecay(individualStrains[current.Column], current.ColumnStrainTime, individual_decay_base);
+            individualStrains[current.Column] += IndividualStrainEvaluator.EvaluateDifficultyOf(current);
 
             // Take the hardest individualStrain for notes that happen at the same time (in a chord).
             // This is to ensure the order in which the notes are processed does not affect the resultant total strain.
-            highestIndividualStrain = maniaCurrent.DeltaTime <= 1 ? Math.Max(highestIndividualStrain, individualStrains[maniaCurrent.Column]) : individualStrains[maniaCurrent.Column];
+            highestIndividualStrain = current.DeltaTime <= 1 ? Math.Max(highestIndividualStrain, individualStrains[current.Column]) : individualStrains[current.Column];
 
-            overallStrain = applyDecay(overallStrain, maniaCurrent.DeltaTime, overall_decay_base);
+            overallStrain = applyDecay(overallStrain, current.DeltaTime, overall_decay_base);
             overallStrain += OverallStrainEvaluator.EvaluateDifficultyOf(current);
 
             // By subtracting CurrentStrain, this skill effectively only considers the maximum strain of any one hitobject within each strain section.
             return highestIndividualStrain + overallStrain - CurrentStrain;
         }
 
-        protected override double CalculateInitialStrain(double offset, DifficultyHitObject current) =>
+        protected override double CalculateInitialStrain(double offset, ManiaDifficultyHitObject current) =>
             applyDecay(highestIndividualStrain, offset - current.Previous(0).StartTime, individual_decay_base)
             + applyDecay(overallStrain, offset - current.Previous(0).StartTime, overall_decay_base);
 

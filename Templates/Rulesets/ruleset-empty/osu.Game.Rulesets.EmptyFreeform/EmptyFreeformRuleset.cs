@@ -11,6 +11,7 @@ using osu.Framework.Input.Bindings;
 using osu.Game.Beatmaps;
 using osu.Game.Graphics;
 using osu.Game.Rulesets.Difficulty;
+using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.EmptyFreeform.Beatmaps;
 using osu.Game.Rulesets.EmptyFreeform.Mods;
 using osu.Game.Rulesets.EmptyFreeform.UI;
@@ -31,7 +32,7 @@ namespace osu.Game.Rulesets.EmptyFreeform
         public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) =>
             new EmptyFreeformBeatmapConverter(beatmap, this);
 
-        public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) =>
+        public override DifficultyCalculator<DifficultyHitObject> CreateDifficultyCalculator(IWorkingBeatmap beatmap) =>
             new EmptyFreeformDifficultyCalculator(RulesetInfo, beatmap);
 
         public override IEnumerable<Mod> GetModsFor(ModType type)

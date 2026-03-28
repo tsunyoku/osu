@@ -19,7 +19,7 @@ using osu.Game.Utils;
 
 namespace osu.Game.Rulesets.Taiko.Difficulty
 {
-    public class TaikoDifficultyCalculator : DifficultyCalculator
+    public class TaikoDifficultyCalculator : DifficultyCalculator<TaikoDifficultyHitObject>
     {
         private const double difficulty_multiplier = 0.084375;
         private const double rhythm_skill_multiplier = 0.750 * difficulty_multiplier;
@@ -40,12 +40,12 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
         {
         }
 
-        protected override ISkill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
+        protected override ISkill<TaikoDifficultyHitObject>[] CreateSkills(IBeatmap beatmap, Mod[] mods)
         {
             isConvert = beatmap.BeatmapInfo.Ruleset.OnlineID == 0;
             isRelax = mods.Any(h => h is TaikoModRelax);
 
-            return new ISkill[]
+            return new ISkill<TaikoDifficultyHitObject>[]
             {
                 new Rhythm(),
                 new Reading(),
@@ -63,9 +63,9 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
             new TaikoModHardRock(),
         };
 
-        protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
+        protected override IEnumerable<TaikoDifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
         {
-            var difficultyHitObjects = new List<DifficultyHitObject>();
+            var difficultyHitObjects = new List<TaikoDifficultyHitObject>();
             var centreObjects = new List<TaikoDifficultyHitObject>();
             var rimObjects = new List<TaikoDifficultyHitObject>();
             var noteObjects = new List<TaikoDifficultyHitObject>();
@@ -95,7 +95,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
             return difficultyHitObjects;
         }
 
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill[] skills)
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill<TaikoDifficultyHitObject>[] skills)
         {
             if (beatmap.HitObjects.Count == 0)
                 return new TaikoDifficultyAttributes { Mods = mods };

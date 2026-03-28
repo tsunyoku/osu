@@ -213,17 +213,17 @@ namespace osu.Game.Tests.NonVisual
             public override Type[] IncompatibleMods => new[] { typeof(ModA), typeof(ModB) };
         }
 
-        private class TestLegacyDifficultyCalculator : DifficultyCalculator
+        private class TestLegacyDifficultyCalculator : DifficultyCalculator<DifficultyHitObject>
         {
             public TestLegacyDifficultyCalculator(params Mod[] mods)
-                : base(null, null)
+                : base(null!, null!)
             {
                 DifficultyAdjustmentMods = mods;
             }
 
             protected override Mod[] DifficultyAdjustmentMods { get; }
 
-            protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill[] skills)
+            protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill<DifficultyHitObject>[] skills)
             {
                 throw new NotImplementedException();
             }
@@ -233,7 +233,7 @@ namespace osu.Game.Tests.NonVisual
                 throw new NotImplementedException();
             }
 
-            protected override ISkill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
+            protected override ISkill<DifficultyHitObject>[] CreateSkills(IBeatmap beatmap, Mod[] mods)
             {
                 throw new NotImplementedException();
             }

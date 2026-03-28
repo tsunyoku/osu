@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Mods;
@@ -21,7 +20,7 @@ using osu.Game.Utils;
 
 namespace osu.Game.Rulesets.Osu.Difficulty
 {
-    public class OsuDifficultyCalculator : DifficultyCalculator
+    public class OsuDifficultyCalculator : DifficultyCalculator<OsuDifficultyHitObject>
     {
         public override int Version => 20251020;
 
@@ -46,7 +45,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             return (79.5 - hitWindowGreat) / 6;
         }
 
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill[] skills)
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill<OsuDifficultyHitObject>[] skills)
         {
             if (beatmap.HitObjects.Count == 0)
                 return new OsuDifficultyAttributes { Mods = mods };
@@ -108,8 +107,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             var scoreAttributes = simulator.Simulate(WorkingBeatmap, beatmap);
 
             double baseAimPerformance = OsuPerformanceCalculator.DifficultyToPerformance(aimRating);
-            double baseSpeedPerformance = HarmonicSkill.DifficultyToPerformance(speedRating);
-            double baseReadingPerformance = HarmonicSkill.DifficultyToPerformance(readingRating);
+            double baseSpeedPerformance = HarmonicSkill<OsuDifficultyHitObject>.DifficultyToPerformance(speedRating);
+            double baseReadingPerformance = HarmonicSkill<OsuDifficultyHitObject>.DifficultyToPerformance(readingRating);
             double baseFlashlightPerformance = Flashlight.DifficultyToPerformance(flashlightRating);
             double baseCognitionPerformance = SumCognitionDifficulty(baseReadingPerformance, baseFlashlightPerformance);
 
@@ -162,9 +161,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             return Math.Cbrt(basePerformance * OsuPerformanceCalculator.PERFORMANCE_BASE_MULTIPLIER);
         }
 
-        protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
+        protected override IEnumerable<OsuDifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
         {
-            List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
+            List<OsuDifficultyHitObject> objects = new List<OsuDifficultyHitObject>();
 
             double clockRate = ModUtils.CalculateRateWithMods(mods);
 
@@ -178,9 +177,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             return objects;
         }
 
-        protected override ISkill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
+        protected override ISkill<OsuDifficultyHitObject>[] CreateSkills(IBeatmap beatmap, Mod[] mods)
         {
-            var skills = new List<ISkill>
+            var skills = new List<ISkill<OsuDifficultyHitObject>>
             {
                 new Aim(mods, true),
                 new Aim(mods, false),

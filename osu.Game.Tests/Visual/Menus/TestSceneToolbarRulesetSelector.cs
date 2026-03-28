@@ -53,7 +53,7 @@ namespace osu.Game.Tests.Visual.Menus
 
             public override IBeatmapConverter CreateBeatmapConverter(IBeatmap beatmap) => null!;
 
-            public override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => null!;
+            public override IDifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => null!;
 
             public override IResourceStore<byte[]> CreateResourceStore() => Resources;
 

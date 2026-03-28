@@ -3,17 +3,17 @@
 
 using System;
 using System.Linq;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
+using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
     /// <summary>
     /// Represents the skill required to memorise and hit every object in a map with the Flashlight mod enabled.
     /// </summary>
-    public class Flashlight : StrainSkill
+    public class Flashlight : StrainSkill<OsuDifficultyHitObject>
     {
         private readonly Mod[] mods;
 
@@ -29,9 +29,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
+        protected override double CalculateInitialStrain(double time, OsuDifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
 
-        protected override double StrainValueAt(DifficultyHitObject current)
+        protected override double StrainValueAt(OsuDifficultyHitObject current)
         {
             currentStrain *= strainDecay(current.DeltaTime);
             currentStrain += FlashlightEvaluator.EvaluateDifficultyOf(current, mods) * skillMultiplier;

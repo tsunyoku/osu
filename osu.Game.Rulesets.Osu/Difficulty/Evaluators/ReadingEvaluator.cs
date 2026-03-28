@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using osu.Framework.Extensions.ObjectExtensions;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
@@ -23,13 +22,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private const double minimum_angle_relevancy_time = 2000; // 2 seconds
         private const double maximum_angle_relevancy_time = 200;
 
-        public static double EvaluateDifficultyOf(DifficultyHitObject current, bool hidden)
+        public static double EvaluateDifficultyOf(OsuDifficultyHitObject currObj, bool hidden)
         {
-            if (current.BaseObject is Spinner || current.Index == 0)
+            if (currObj.BaseObject is Spinner || currObj.Index == 0)
                 return 0;
 
-            var currObj = (OsuDifficultyHitObject)current;
-            var nextObj = (OsuDifficultyHitObject)current.Next(0);
+            var nextObj = (OsuDifficultyHitObject)currObj.Next(0);
 
             double velocity = Math.Max(1, currObj.LazyJumpDistance / currObj.AdjustedDeltaTime); // Only allow velocity to buff
 

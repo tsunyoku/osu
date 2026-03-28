@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Collections.Generic;
+using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mania.Objects;
 using osu.Game.Rulesets.Objects;
@@ -12,7 +13,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
     {
         public new ManiaHitObject BaseObject => (ManiaHitObject)base.BaseObject;
 
-        private readonly List<DifficultyHitObject>[] perColumnObjects;
+        private readonly List<ManiaDifficultyHitObject>[] perColumnObjects;
 
         private readonly int columnIndex;
 
@@ -23,8 +24,8 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
 
         public readonly double ColumnStrainTime;
 
-        public ManiaDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, List<DifficultyHitObject>[] perColumnObjects, int index)
-            : base(hitObject, lastObject, clockRate, objects, index)
+        public ManiaDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<ManiaDifficultyHitObject> objects, List<ManiaDifficultyHitObject>[] perColumnObjects, int index)
+            : base(hitObject, lastObject, clockRate, objects.Cast<DifficultyHitObject>().ToList(), index)
         {
             int totalColumns = perColumnObjects.Length;
             this.perColumnObjects = perColumnObjects;
@@ -35,7 +36,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
 
             if (index > 0)
             {
-                ManiaDifficultyHitObject prevNote = (ManiaDifficultyHitObject)objects[index - 1];
+                ManiaDifficultyHitObject prevNote = objects[index - 1];
 
                 for (int i = 0; i < prevNote.PreviousHitObjects.Length; i++)
                     PreviousHitObjects[i] = prevNote.PreviousHitObjects[i];
@@ -53,7 +54,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
         public ManiaDifficultyHitObject? PrevInColumn(int backwardsIndex)
         {
             int index = columnIndex - (backwardsIndex + 1);
-            return index >= 0 && index < perColumnObjects[Column].Count ? (ManiaDifficultyHitObject)perColumnObjects[Column][index] : null;
+            return index >= 0 && index < perColumnObjects[Column].Count ? perColumnObjects[Column][index] : null;
         }
 
         /// <summary>
@@ -64,7 +65,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Preprocessing
         public ManiaDifficultyHitObject? NextInColumn(int forwardsIndex)
         {
             int index = columnIndex + (forwardsIndex + 1);
-            return index >= 0 && index < perColumnObjects[Column].Count ? (ManiaDifficultyHitObject)perColumnObjects[Column][index] : null;
+            return index >= 0 && index < perColumnObjects[Column].Count ? perColumnObjects[Column][index] : null;
         }
     }
 }

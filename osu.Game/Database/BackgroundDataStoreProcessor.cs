@@ -22,6 +22,7 @@ using osu.Game.Overlays;
 using osu.Game.Overlays.Notifications;
 using osu.Game.Performance;
 using osu.Game.Rulesets;
+using osu.Game.Rulesets.Mods;
 using osu.Game.Scoring;
 using osu.Game.Scoring.Legacy;
 using osu.Game.Screens.Play;
@@ -204,7 +205,7 @@ namespace osu.Game.Database
 
                     var calculator = ruleset.CreateDifficultyCalculator(working);
 
-                    double starRating = calculator.Calculate().StarRating;
+                    double starRating = calculator.Calculate(Array.Empty<Mod>()).StarRating;
                     realmAccess.Write(r =>
                     {
                         if (r.Find<BeatmapInfo>(id) is BeatmapInfo liveBeatmapInfo)

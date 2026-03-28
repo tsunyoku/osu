@@ -1,9 +1,11 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using NUnit.Framework;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty;
+using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty;
 using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Tests.Beatmaps;
@@ -42,7 +44,7 @@ namespace osu.Game.Rulesets.Osu.Tests
             const double offset_iterations = 400;
             var beatmap = GetBeatmap(name);
 
-            var attributes = CreateDifficultyCalculator(beatmap).Calculate();
+            var attributes = CreateDifficultyCalculator(beatmap).Calculate(Array.Empty<Mod>());
             double expectedStarRating = attributes.StarRating;
 
             for (int i = 0; i < offset_iterations; i++)
@@ -50,7 +52,7 @@ namespace osu.Game.Rulesets.Osu.Tests
                 foreach (var beatmapHitObject in beatmap.Beatmap.HitObjects)
                     beatmapHitObject.StartTime++;
 
-                attributes = CreateDifficultyCalculator(beatmap).Calculate();
+                attributes = CreateDifficultyCalculator(beatmap).Calculate(Array.Empty<Mod>());
 
                 // Platform-dependent math functions (Pow, Cbrt, Exp, etc) may result in minute differences.
                 Assert.That(attributes.StarRating, Is.EqualTo(expectedStarRating).Within(0.00001));
@@ -58,7 +60,7 @@ namespace osu.Game.Rulesets.Osu.Tests
             }
         }
 
-        protected override DifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => new OsuDifficultyCalculator(new OsuRuleset().RulesetInfo, beatmap);
+        protected override IDifficultyCalculator CreateDifficultyCalculator(IWorkingBeatmap beatmap) => new OsuDifficultyCalculator(new OsuRuleset().RulesetInfo, beatmap);
 
         protected override Ruleset CreateRuleset() => new OsuRuleset();
     }
