@@ -4,7 +4,6 @@
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Difficulty.Utils;
-using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Taiko.Difficulty.Evaluators;
 
 namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
@@ -16,11 +15,6 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
     {
         protected override double SkillMultiplier => 1.0;
         protected override double StrainDecayBase => 0.4;
-
-        public Rhythm(Mod[] mods)
-            : base(mods)
-        {
-        }
 
         protected override double StrainValueOf(DifficultyHitObject current)
         {

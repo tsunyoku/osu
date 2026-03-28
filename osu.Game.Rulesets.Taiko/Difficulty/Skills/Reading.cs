@@ -4,7 +4,6 @@
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Difficulty.Utils;
-using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Taiko.Difficulty.Evaluators;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Taiko.Objects;
@@ -20,11 +19,6 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
         protected override double StrainDecayBase => 0.4;
 
         private double currentStrain;
-
-        public Reading(Mod[] mods)
-            : base(mods)
-        {
-        }
 
         protected override double StrainValueOf(DifficultyHitObject current)
         {

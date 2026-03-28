@@ -21,7 +21,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private readonly bool hasHiddenMod;
 
         public Reading(Mod[] mods)
-            : base(mods)
         {
             hasHiddenMod = mods.OfType<OsuModHidden>().Any(m => !m.OnlyFadeApproachCircles.Value);
         }

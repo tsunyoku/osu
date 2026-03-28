@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Extensions;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
-using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
@@ -14,7 +13,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
     /// Similar to <see cref="StrainSkill"/>, but instead of strains having a fixed length, strains can be any length.
     /// A new <see cref="StrainPeak"/> is created for each <see cref="DifficultyHitObject"/>.
     /// </summary>
-    public abstract class VariableLengthStrainSkill : Skill
+    public abstract class VariableLengthStrainSkill : ISkill, IHasObjectDifficulties
     {
         /// <summary>
         /// The weight by which each strain value decays.
@@ -25,6 +24,8 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// The maximum length of each strain section.
         /// </summary>
         protected virtual int MaxSectionLength => 400;
+
+        protected readonly List<double> ObjectDifficulties = new List<double>();
 
         private double currentSectionPeak; // We also keep track of the peak strain in the current section.
         private double currentSectionBegin;
@@ -48,20 +49,13 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         private readonly List<(double StrainValue, double StartTime)> queuedStrains = new List<(double, double)>();
 
-        protected VariableLengthStrainSkill(Mod[] mods)
-            : base(mods)
-        {
-        }
-
         /// <summary>
         /// Returns the strain value at <see cref="DifficultyHitObject"/>. This value is calculated with or without respect to previous objects.
         /// </summary>
         protected abstract double StrainValueAt(DifficultyHitObject current);
 
-        /// <summary>
-        /// Process a <see cref="DifficultyHitObject"/> and update current strain values accordingly.
-        /// </summary>
-        protected sealed override double ProcessInternal(DifficultyHitObject current)
+        /// <inheritdoc />
+        public void Process(DifficultyHitObject current)
         {
             // If we're on the first object, set up the first section to end `MaxSectionLength` after it.
             if (current.Index == 0)
@@ -71,7 +65,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
 
                 // No work is required for first object after calculating difficulty
                 currentSectionPeak = StrainValueAt(current);
-                return currentSectionPeak;
+                ObjectDifficulties.Add(currentSectionPeak);
             }
 
             backfillPeaks(current);
@@ -102,7 +96,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
                 queuedStrains.Add((currentStrain, current.StartTime));
             }
 
-            return currentStrain;
+            ObjectDifficulties.Add(currentStrain);
         }
 
         /// <summary>
@@ -192,18 +186,23 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         public IEnumerable<StrainPeak> GetCurrentStrainPeaks() => strainPeaks.Append(new StrainPeak(currentSectionPeak, currentSectionEnd - currentSectionBegin));
 
-        /// <summary>
-        /// Returns the calculated difficulty value representing all <see cref="DifficultyHitObject"/>s that have been processed up to this point.
-        /// </summary>
-        public override double DifficultyValue()
+        protected virtual List<StrainPeak> GetDifficultyStrains()
         {
-            double difficulty = 0;
-
             // Sections with 0 strain are excluded to avoid worst-case time complexity of the following sort (e.g. /b/2351871).
             // These sections will not contribute to the difficulty.
             var peaks = GetCurrentStrainPeaks().Where(p => p.Value > 0);
 
-            List<StrainPeak> strains = peaks.OrderByDescending(p => (p.Value, p.SectionLength)).ToList();
+            return peaks
+                   .OrderByDescending(p => (p.Value, p.SectionLength))
+                   .ToList();
+        }
+
+        /// <inheritdoc />
+        public double DifficultyValue()
+        {
+            double difficulty = 0;
+
+            var strains = GetDifficultyStrains();
 
             // Time is measured in units of strains
             double time = 0;
@@ -273,5 +272,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
 
             public int CompareTo(StrainPeak other) => Value.CompareTo(other.Value);
         }
+
+        public IReadOnlyList<double> GetObjectDifficulties() => ObjectDifficulties.AsReadOnly();
     }
 }

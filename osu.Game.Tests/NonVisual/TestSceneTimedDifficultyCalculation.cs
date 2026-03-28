@@ -173,7 +173,7 @@ namespace osu.Game.Tests.NonVisual
             {
             }
 
-            protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills)
+            protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill[] skills)
                 => new TestDifficultyAttributes { Objects = beatmap.HitObjects.ToArray() };
 
             protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
@@ -194,21 +194,15 @@ namespace osu.Game.Tests.NonVisual
                 return objects;
             }
 
-            protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods) => new Skill[] { new PassThroughSkill(mods) };
+            protected override ISkill[] CreateSkills(IBeatmap beatmap, Mod[] mods) => new ISkill[] { new PassThroughSkill() };
 
-            private class PassThroughSkill : Skill
+            private class PassThroughSkill : ISkill
             {
-                public PassThroughSkill(Mod[] mods)
-                    : base(mods)
+                public void Process(DifficultyHitObject current)
                 {
                 }
 
-                protected override double ProcessInternal(DifficultyHitObject current)
-                {
-                    return 0;
-                }
-
-                public override double DifficultyValue() => 1;
+                public double DifficultyValue() => 1;
             }
         }
 

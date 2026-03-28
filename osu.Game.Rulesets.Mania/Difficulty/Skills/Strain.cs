@@ -6,7 +6,6 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mania.Difficulty.Evaluators;
 using osu.Game.Rulesets.Mania.Difficulty.Preprocessing;
-using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 {
@@ -22,8 +21,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
         private double highestIndividualStrain;
         private double overallStrain;
 
-        public Strain(Mod[] mods, int totalColumns)
-            : base(mods)
+        public Strain(int totalColumns)
         {
             individualStrains = new double[totalColumns];
             overallStrain = 1;

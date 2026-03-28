@@ -2,14 +2,14 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
-using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
-    public abstract class HarmonicSkill : Skill
+    public abstract class HarmonicSkill : ISkill, IHasObjectDifficulties
     {
         /// <summary>
         /// The sum of note weights, calculated during summation.
@@ -29,18 +29,18 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         protected virtual double DecayExponent => 0.9;
 
-        protected HarmonicSkill(Mod[] mods)
-            : base(mods)
-        {
-        }
+        protected readonly List<double> ObjectDifficulties = new List<double>();
 
         /// <summary>
         /// Returns the difficulty value of the current <see cref="DifficultyHitObject"/>. This value is calculated with or without respect to previous objects.
         /// </summary>
         protected abstract double ObjectDifficultyOf(DifficultyHitObject current);
 
-        protected sealed override double ProcessInternal(DifficultyHitObject current)
-            => ObjectDifficultyOf(current);
+        public void Process(DifficultyHitObject current)
+        {
+            double difficulty = ObjectDifficultyOf(current);
+            ObjectDifficulties.Add(difficulty);
+        }
 
         /// <summary>
         /// Transforms the object difficulties specifically for final difficulty summation.
@@ -50,7 +50,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         {
         }
 
-        public override double DifficultyValue()
+        public double DifficultyValue()
         {
             if (ObjectDifficulties.Count == 0)
                 return 0;
@@ -99,6 +99,8 @@ namespace osu.Game.Rulesets.Difficulty.Skills
 
             return ObjectDifficulties.Sum(d => DifficultyCalculationUtils.Logistic(d / consistentTopNote, 0.88, 10, 1.1));
         }
+
+        public IReadOnlyList<double> GetObjectDifficulties() => ObjectDifficulties.AsReadOnly();
 
         public static double DifficultyToPerformance(double difficulty) => 4.0 * Math.Pow(difficulty, 3.0);
     }

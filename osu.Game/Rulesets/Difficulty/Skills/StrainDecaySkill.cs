@@ -3,7 +3,6 @@
 
 using System;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
-using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
@@ -28,11 +27,6 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// The current strain level.
         /// </summary>
         protected double CurrentStrain { get; private set; }
-
-        protected StrainDecaySkill(Mod[] mods)
-            : base(mods)
-        {
-        }
 
         protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => CurrentStrain * strainDecay(time - current.Previous(0).StartTime);
 

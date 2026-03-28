@@ -15,9 +15,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// </summary>
     public class Flashlight : StrainSkill
     {
+        private readonly Mod[] mods;
+
         public Flashlight(Mod[] mods)
-            : base(mods)
         {
+            this.mods = mods;
         }
 
         private double skillMultiplier => 0.056;
@@ -32,7 +34,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected override double StrainValueAt(DifficultyHitObject current)
         {
             currentStrain *= strainDecay(current.DeltaTime);
-            currentStrain += FlashlightEvaluator.EvaluateDifficultyOf(current, Mods) * skillMultiplier;
+            currentStrain += FlashlightEvaluator.EvaluateDifficultyOf(current, mods) * skillMultiplier;
 
             return currentStrain;
         }

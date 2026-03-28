@@ -46,7 +46,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             return (79.5 - hitWindowGreat) / 6;
         }
 
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills)
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkill[] skills)
         {
             if (beatmap.HitObjects.Count == 0)
                 return new OsuDifficultyAttributes { Mods = mods };
@@ -178,13 +178,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             return objects;
         }
 
-        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
+        protected override ISkill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
         {
-            var skills = new List<Skill>
+            var skills = new List<ISkill>
             {
                 new Aim(mods, true),
                 new Aim(mods, false),
-                new Speed(mods),
+                new Speed(),
                 new Reading(mods)
             };
 

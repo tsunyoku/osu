@@ -21,11 +21,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// </summary>
     public class Aim : VariableLengthStrainSkill
     {
+        private readonly Mod[] mods;
+
         public readonly bool IncludeSliders;
 
         public Aim(Mod[] mods, bool includeSliders)
-            : base(mods)
         {
+            this.mods = mods;
             IncludeSliders = includeSliders;
         }
 
@@ -63,14 +65,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             double agilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(current) * skillMultiplierAgility;
             double flowDifficulty = FlowAimEvaluator.EvaluateDifficultyOf(current, IncludeSliders) * skillMultiplierFlow;
 
-            if (Mods.Any(m => m is OsuModTouchDevice))
+            if (mods.Any(m => m is OsuModTouchDevice))
             {
                 snapDifficulty = Math.Pow(snapDifficulty, 0.89);
                 // we don't adjust agility here since agility represents TD difficulty in a decent enough way
                 flowDifficulty = Math.Pow(flowDifficulty, 1.1);
             }
 
-            if (Mods.Any(m => m is OsuModRelax))
+            if (mods.Any(m => m is OsuModRelax))
             {
                 agilityDifficulty *= 0.3;
             }
@@ -150,55 +152,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return sliderStrains.Sum(s => DifficultyCalculationUtils.Logistic(s / consistentTopStrain, 0.88, 10, 1.1));
         }
 
-        public override double DifficultyValue()
+        protected override List<StrainPeak> GetDifficultyStrains()
         {
-            double difficulty = 0;
-            double time = 0;
-
-            var strains = getReducedStrainPeaks();
-
-            // Difficulty is a continuous weighted sum of the sorted strains
-            foreach (StrainPeak strain in strains)
-            {
-                /* Weighting function can be thought of as:
-                        b
-                        ∫ DecayWeight^x dx
-                        a
-                    where a = startTime and b = endTime
-
-                    Technically, the function below has been slightly modified from the equation above.
-                    The real function would be
-                        double weight = Math.Pow(DecayWeight, startTime) - Math.Pow(DecayWeight, endTime);
-                        ...
-                        return difficulty / Math.Log(1 / DecayWeight);
-                    E.g. for a DecayWeight of 0.9, we're multiplying by 10 instead of 9.49122...
-
-                    This change makes it so that a map composed solely of MaxSectionLength chunks will have the exact same value when summed in this class and StrainSkill.
-                    Doing this ensures the relationship between strain values and difficulty values remains the same between the two classes.
-                */
-                double startTime = time;
-                double endTime = time + strain.SectionLength / MaxSectionLength;
-
-                double weight = Math.Pow(DecayWeight, startTime) - Math.Pow(DecayWeight, endTime);
-
-                difficulty += strain.Value * weight;
-                time = endTime;
-            }
-
-            return difficulty / (1 - DecayWeight);
-        }
-
-        /// <summary>
-        /// Returns a sorted enumerable of strain peaks with the highest values reduced.
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerable<StrainPeak> getReducedStrainPeaks()
-        {
-            // Sections with 0 strain are excluded to avoid worst-case time complexity of the following sort (e.g. /b/2351871).
-            // These sections will not contribute to the difficulty.
-            var peaks = GetCurrentStrainPeaks().Where(p => p.Value > 0);
-
-            List<StrainPeak> strains = peaks.OrderByDescending(p => p.Value).ToList();
+            var strains = base.GetDifficultyStrains();
 
             const int chunk_size = 20;
             double time = 0;
@@ -226,7 +182,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             strains.RemoveRange(0, strainsToRemove);
 
-            return strains.OrderByDescending(p => p.Value);
+            return strains
+                   .OrderByDescending(p => p.Value)
+                   .ToList();
         }
     }
 }

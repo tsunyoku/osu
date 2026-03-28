@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
-using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Objects;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Skills;
@@ -29,11 +28,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         protected override double HarmonicScale => 20;
         protected override double DecayExponent => 0.9;
-
-        public Speed(Mod[] mods)
-            : base(mods)
-        {
-        }
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
