@@ -199,8 +199,6 @@ namespace osu.Game.Tests.NonVisual
             private class PassThroughSkill : Skill
             {
                 protected override double ProcessInternal(DifficultyHitObject current) => 0;
-
-                public override double DifficultyValue() => 1;
             }
         }
 
