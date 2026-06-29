@@ -11,20 +11,27 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
     /// <summary>
     /// Calculates the rhythm coefficient of taiko difficulty.
     /// </summary>
-    public class Rhythm : StrainDecaySkill
+    public class Rhythm : StrainSkill
     {
-        protected override double SkillMultiplier => 1.0;
-        protected override double StrainDecayBase => 0.4;
+        private double currentStrain;
 
-        protected override double StrainValueOf(DifficultyHitObject current)
+        private double strainDecay(double ms) => DiffUtils.Pow(0.4, ms / 1000);
+
+        protected override double StrainValueAt(DifficultyHitObject current)
         {
+            currentStrain *= strainDecay(current.DeltaTime);
+
             double difficulty = RhythmEvaluator.EvaluateDifficultyOf(current);
 
             // To prevent abuse of exceedingly long intervals between awkward rhythms, we penalise its difficulty.
             double staminaDifficulty = StaminaEvaluator.EvaluateDifficultyOf(current) - 0.5; // Remove base strain
             difficulty *= DiffUtils.Logistic(staminaDifficulty, 1 / 15.0, 50.0);
 
-            return difficulty;
+            currentStrain += difficulty;
+
+            return currentStrain;
         }
+
+        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
     }
 }

@@ -10,13 +10,10 @@ using osu.Game.Rulesets.Mania.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Mania.Difficulty.Skills
 {
-    public class Strain : StrainDecaySkill
+    public class Strain : StrainSkill
     {
         private const double individual_decay_base = 0.125;
         private const double overall_decay_base = 0.30;
-
-        protected override double SkillMultiplier => 1;
-        protected override double StrainDecayBase => 1;
 
         private readonly double[] individualStrains;
         private double highestIndividualStrain;
@@ -28,7 +25,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             overallStrain = 1;
         }
 
-        protected override double StrainValueOf(DifficultyHitObject current)
+        protected override double StrainValueAt(DifficultyHitObject current)
         {
             var maniaCurrent = (ManiaDifficultyHitObject)current;
 
@@ -42,8 +39,7 @@ namespace osu.Game.Rulesets.Mania.Difficulty.Skills
             overallStrain = applyDecay(overallStrain, maniaCurrent.DeltaTime, overall_decay_base);
             overallStrain += OverallStrainEvaluator.EvaluateDifficultyOf(current);
 
-            // By subtracting CurrentStrain, this skill effectively only considers the maximum strain of any one hitobject within each strain section.
-            return highestIndividualStrain + overallStrain - CurrentStrain;
+            return highestIndividualStrain + overallStrain;
         }
 
         protected override double CalculateInitialStrain(double offset, DifficultyHitObject current) =>

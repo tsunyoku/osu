@@ -4,21 +4,28 @@
 using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
+using osu.Game.Rulesets.Difficulty.Utils;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 {
-    public class Movement : StrainDecaySkill
+    public class Movement : StrainSkill
     {
-        protected override double SkillMultiplier => 1;
-        protected override double StrainDecayBase => 0.2;
-
         protected override double DecayWeight => 0.94;
 
         protected override int SectionLength => 750;
 
-        protected override double StrainValueOf(DifficultyHitObject current)
+        private double currentStrain;
+
+        private double strainDecay(double ms) => DiffUtils.Pow(0.2, ms / 1000);
+
+        protected override double StrainValueAt(DifficultyHitObject current)
         {
-            return MovementEvaluator.EvaluateDifficultyOf(current);
+            currentStrain *= strainDecay(current.DeltaTime);
+            currentStrain += MovementEvaluator.EvaluateDifficultyOf(current);
+
+            return currentStrain;
         }
+
+        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
     }
 }

@@ -13,15 +13,21 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
     /// <summary>
     /// Calculates the reading coefficient of taiko difficulty.
     /// </summary>
-    public class Reading : StrainDecaySkill
+    public class Reading : StrainSkill
     {
-        protected override double SkillMultiplier => 1.0;
-        protected override double StrainDecayBase => 0.4;
-
         private double currentStrain;
 
-        protected override double StrainValueOf(DifficultyHitObject current)
+        // TODO: this almost certainly should not exist.
+        private double currentDifficulty;
+
+        private const double strain_decay_base = 0.4;
+
+        private double strainDecay(double ms) => DiffUtils.Pow(strain_decay_base, ms / 1000);
+
+        protected override double StrainValueAt(DifficultyHitObject current)
         {
+            currentStrain *= strainDecay(current.DeltaTime);
+
             // Drum Rolls and Swells are exempt.
             if (current.BaseObject is not Hit)
             {
@@ -31,12 +37,18 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
             var taikoObject = (TaikoDifficultyHitObject)current;
             int index = taikoObject.ColourData.MonoStreak?.HitObjects.IndexOf(taikoObject) ?? 0;
 
-            currentStrain *= DiffUtils.Logistic(index, 4, -1 / 25.0, 0.5) + 0.5;
+            currentDifficulty *= DiffUtils.Logistic(index, 4, -1 / 25.0, 0.5) + 0.5;
 
-            currentStrain *= StrainDecayBase;
-            currentStrain += ReadingEvaluator.EvaluateDifficultyOf(taikoObject) * SkillMultiplier;
+            // TODO: wtf?????????????
+            currentDifficulty *= strain_decay_base;
+
+            currentDifficulty += ReadingEvaluator.EvaluateDifficultyOf(taikoObject);
+
+            currentStrain += currentDifficulty;
 
             return currentStrain;
         }
+
+        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
     }
 }
