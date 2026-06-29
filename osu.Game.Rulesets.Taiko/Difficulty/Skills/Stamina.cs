@@ -4,7 +4,6 @@
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Difficulty.Utils;
-using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Taiko.Difficulty.Evaluators;
 using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
 
@@ -26,13 +25,12 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
         /// <summary>
         /// Creates a <see cref="Stamina"/> skill.
         /// </summary>
-        /// <param name="mods">Mods for use in skill calculations.</param>
         /// <param name="singleColourStamina">Reads when Stamina is from a single coloured pattern.</param>
         /// <param name="isConvert">Determines if the currently evaluated beatmap is converted.</param>
-        public Stamina(Mod[] mods, bool singleColourStamina, bool isConvert)
-            : base(mods)
+        public Stamina(bool singleColourStamina, bool isConvert)
         {
             SingleColourStamina = singleColourStamina;
+
             this.isConvert = isConvert;
         }
 

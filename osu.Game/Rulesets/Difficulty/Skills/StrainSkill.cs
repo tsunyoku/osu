@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
-using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
@@ -29,11 +28,6 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         private double currentSectionEnd;
 
         private readonly List<double> strainPeaks = new List<double>();
-
-        protected StrainSkill(Mod[] mods)
-            : base(mods)
-        {
-        }
 
         /// <summary>
         /// Returns the strain value at <see cref="DifficultyHitObject"/>. This value is calculated with or without respect to previous objects.

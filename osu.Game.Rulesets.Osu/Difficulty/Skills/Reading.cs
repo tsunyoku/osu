@@ -20,11 +20,20 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private readonly List<DifficultyHitObject> objectList = new List<DifficultyHitObject>();
 
         private readonly bool hasHiddenMod;
+        private readonly bool hasTouchDeviceMod;
+        private readonly bool hasRelaxMod;
+        private readonly bool hasAutopilotMod;
+
+        private readonly OsuModMagnetised? magnetisedMod;
 
         public Reading(Mod[] mods)
-            : base(mods)
         {
             hasHiddenMod = mods.OfType<OsuModHidden>().Any(m => !m.OnlyFadeApproachCircles.Value);
+            hasTouchDeviceMod = mods.Any(m => m is OsuModTouchDevice);
+            hasRelaxMod = mods.Any(m => m is OsuModRelax);
+            hasAutopilotMod = mods.Any(m => m is OsuModAutopilot);
+
+            magnetisedMod = mods.OfType<OsuModMagnetised>().SingleOrDefault();
         }
 
         private double currentStrain;
@@ -49,19 +58,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             double difficulty = ReadingEvaluator.EvaluateDifficultyOf(current, hasHiddenMod);
 
-            if (Mods.Any(m => m is OsuModTouchDevice))
+            if (hasTouchDeviceMod)
                 difficulty = DiffUtils.Pow(difficulty, 0.89);
 
-            if (Mods.Any(m => m is OsuModMagnetised))
+            if (magnetisedMod != null)
             {
-                float magnetisedStrength = Mods.OfType<OsuModMagnetised>().First().AttractionStrength.Value;
+                float magnetisedStrength = magnetisedMod.AttractionStrength.Value;
                 difficulty *= 1.0 - magnetisedStrength;
             }
 
-            if (Mods.Any(m => m is OsuModRelax))
+            if (hasRelaxMod)
                 difficulty *= 0.4;
 
-            if (Mods.Any(m => m is OsuModAutopilot))
+            if (hasAutopilotMod)
                 difficulty *= 0.1;
 
             difficulty *= 0.825 + DiffUtils.Pow(Math.Max(0, ((OsuDifficultyHitObject)current).OverallDifficulty), 2.2) / 1125.0;

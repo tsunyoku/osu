@@ -3,7 +3,6 @@
 
 using System.Collections.Generic;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
-using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
@@ -16,21 +15,9 @@ namespace osu.Game.Rulesets.Difficulty.Skills
     public abstract class Skill
     {
         /// <summary>
-        /// Mods for use in skill calculations.
-        /// </summary>
-        protected IReadOnlyList<Mod> Mods => mods;
-
-        /// <summary>
         /// List of calculated per-object difficulties, populated by Process
         /// </summary>
         protected readonly List<double> ObjectDifficulties = new List<double>();
-
-        private readonly Mod[] mods;
-
-        protected Skill(Mod[] mods)
-        {
-            this.mods = mods;
-        }
 
         /// <summary>
         /// Process a <see cref="DifficultyHitObject"/>.

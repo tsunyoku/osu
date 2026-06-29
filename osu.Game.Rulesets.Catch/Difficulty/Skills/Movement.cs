@@ -4,7 +4,6 @@
 using osu.Game.Rulesets.Catch.Difficulty.Evaluators;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
-using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Catch.Difficulty.Skills
 {
@@ -16,11 +15,6 @@ namespace osu.Game.Rulesets.Catch.Difficulty.Skills
         protected override double DecayWeight => 0.94;
 
         protected override int SectionLength => 750;
-
-        public Movement(Mod[] mods)
-            : base(mods)
-        {
-        }
 
         protected override double StrainValueOf(DifficultyHitObject current)
         {

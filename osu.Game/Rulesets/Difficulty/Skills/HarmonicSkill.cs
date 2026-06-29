@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
-using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
@@ -28,11 +27,6 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// Values closer to 1 decay faster whilst lower values give more weight to lower object difficulties.
         /// </summary>
         protected virtual double DecayExponent => 0.9;
-
-        protected HarmonicSkill(Mod[] mods)
-            : base(mods)
-        {
-        }
 
         /// <summary>
         /// Returns the difficulty value of the current <see cref="DifficultyHitObject"/>. This value is calculated with or without respect to previous objects.

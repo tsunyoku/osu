@@ -3,7 +3,6 @@
 
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
-using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Taiko.Difficulty.Evaluators;
 
 namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
@@ -20,14 +19,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
         // slower maps.
         protected override double StrainDecayBase => 0.8;
 
-        public Colour(Mod[] mods)
-            : base(mods)
-        {
-        }
-
         protected override double StrainValueOf(DifficultyHitObject current)
-        {
-            return ColourEvaluator.EvaluateDifficultyOf(current);
-        }
+            => ColourEvaluator.EvaluateDifficultyOf(current);
     }
 }

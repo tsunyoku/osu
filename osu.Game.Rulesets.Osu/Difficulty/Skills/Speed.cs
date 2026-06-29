@@ -23,13 +23,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private readonly List<double> sliderStrains = new List<double>();
 
         private double currentStrain;
+        private readonly bool hasRelaxMod;
+        private readonly bool hasAutopilotMod;
 
         protected override double HarmonicScale => 20;
         protected override double DecayExponent => 0.9;
 
         public Speed(Mod[] mods)
-            : base(mods)
         {
+            hasRelaxMod = mods.Any(m => m is OsuModRelax);
+            hasAutopilotMod = mods.Any(m => m is OsuModAutopilot);
         }
 
         private double strainDecay(double ms) => DiffUtils.Pow(0.3, ms / 1000);
@@ -38,7 +41,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             const double skill_multiplier = 1.16;
 
-            if (Mods.Any(m => m is OsuModRelax))
+            if (hasRelaxMod)
                 return 0;
 
             double decay = strainDecay(((OsuDifficultyHitObject)current).AdjustedDeltaTime);
@@ -60,7 +63,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             double difficulty = SpeedEvaluator.EvaluateDifficultyOf(current);
 
-            if (Mods.Any(m => m is OsuModAutopilot))
+            if (hasAutopilotMod)
                 difficulty *= 0.5;
 
             return difficulty;

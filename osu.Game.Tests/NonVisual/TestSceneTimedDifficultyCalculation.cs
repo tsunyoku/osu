@@ -194,19 +194,11 @@ namespace osu.Game.Tests.NonVisual
                 return objects;
             }
 
-            protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods) => new Skill[] { new PassThroughSkill(mods) };
+            protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods) => new Skill[] { new PassThroughSkill() };
 
             private class PassThroughSkill : Skill
             {
-                public PassThroughSkill(Mod[] mods)
-                    : base(mods)
-                {
-                }
-
-                protected override double ProcessInternal(DifficultyHitObject current)
-                {
-                    return 0;
-                }
+                protected override double ProcessInternal(DifficultyHitObject current) => 0;
 
                 public override double DifficultyValue() => 1;
             }

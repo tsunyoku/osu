@@ -47,11 +47,11 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
 
             return new Skill[]
             {
-                new Rhythm(mods),
-                new Reading(mods),
-                new Colour(mods),
-                new Stamina(mods, false, isConvert),
-                new Stamina(mods, true, isConvert)
+                new Rhythm(),
+                new Reading(),
+                new Colour(),
+                new Stamina(false, isConvert),
+                new Stamina(true, isConvert)
             };
         }
 

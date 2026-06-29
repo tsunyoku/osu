@@ -20,10 +20,27 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     {
         private readonly int totalObjects;
 
+        private readonly bool hasFlashlightMod;
+        private readonly bool hasTouchDeviceMod;
+        private readonly bool hasRelaxMod;
+        private readonly bool hasAutopilotMod;
+
+        private readonly OsuModHidden? hiddenMod;
+        private readonly OsuModMagnetised? magnetisedMod;
+        private readonly OsuModDeflate? deflateMod;
+
         public Flashlight(Mod[] mods, int totalObjects)
-            : base(mods)
         {
             this.totalObjects = totalObjects;
+
+            hasFlashlightMod = mods.Any(m => m is OsuModFlashlight);
+            hasTouchDeviceMod = mods.Any(m => m is OsuModTouchDevice);
+            hasRelaxMod = mods.Any(m => m is OsuModRelax);
+            hasAutopilotMod = mods.Any(m => m is OsuModAutopilot);
+
+            hiddenMod = mods.OfType<OsuModHidden>().SingleOrDefault();
+            magnetisedMod = mods.OfType<OsuModMagnetised>().SingleOrDefault();
+            deflateMod = mods.OfType<OsuModDeflate>().SingleOrDefault();
         }
 
         private double currentStrain;
@@ -36,7 +53,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             const double skill_multiplier = 0.058;
 
-            if (!Mods.Any(m => m is OsuModFlashlight))
+            if (!hasFlashlightMod)
                 return 0;
 
             currentStrain *= strainDecay(current.DeltaTime);
@@ -47,27 +64,27 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double calculateAdjustedDifficulty(DifficultyHitObject current)
         {
-            double difficulty = FlashlightEvaluator.EvaluateDifficultyOf(current, Mods);
+            double difficulty = FlashlightEvaluator.EvaluateDifficultyOf(current, hiddenMod);
 
-            if (Mods.Any(m => m is OsuModTouchDevice))
+            if (hasTouchDeviceMod)
                 difficulty = DiffUtils.Pow(difficulty, 0.9);
 
-            if (Mods.Any(m => m is OsuModMagnetised))
+            if (magnetisedMod != null)
             {
-                float magnetisedStrength = Mods.OfType<OsuModMagnetised>().First().AttractionStrength.Value;
+                float magnetisedStrength = magnetisedMod.AttractionStrength.Value;
                 difficulty *= 1.0 - magnetisedStrength;
             }
 
-            if (Mods.Any(m => m is OsuModDeflate))
+            if (deflateMod != null)
             {
-                float deflateInitialScale = Mods.OfType<OsuModDeflate>().First().StartScale.Value;
+                float deflateInitialScale = deflateMod.StartScale.Value;
                 difficulty *= Math.Clamp(DiffUtils.ReverseLerp(deflateInitialScale, 11, 1), 0.1, 1);
             }
 
-            if (Mods.Any(m => m is OsuModRelax))
+            if (hasRelaxMod)
                 difficulty *= 0.7;
 
-            if (Mods.Any(m => m is OsuModAutopilot))
+            if (hasAutopilotMod)
                 difficulty *= 0.4;
 
             difficulty *= 0.985 + DiffUtils.Pow(Math.Max(0, ((OsuDifficultyHitObject)current).OverallDifficulty), 2) / 4000;

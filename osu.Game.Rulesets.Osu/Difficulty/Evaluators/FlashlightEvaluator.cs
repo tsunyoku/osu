@@ -2,11 +2,8 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
-using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Objects;
@@ -25,7 +22,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// <item><description>and whether the hidden mod is enabled.</description></item>
         /// </list>
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current, IReadOnlyList<Mod> mods)
+        public static double EvaluateDifficultyOf(DifficultyHitObject current, OsuModHidden? hiddenMod)
         {
             if (current.BaseObject is Spinner)
                 return 0;
@@ -70,8 +67,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     // We also want to nerf stacks so that only the first object of the stack is accounted for.
                     double stackNerf = Math.Min(1.0, (currentObj.LazyJumpDistance / scalingFactor) / 25.0);
 
+                    // If `OnlyFadeApproachCircles` is enabled, hidden opacity is unchanged.
+                    bool shouldCalculateHiddenOpacity = hiddenMod != null && !hiddenMod.OnlyFadeApproachCircles.Value;
+
                     // Bonus based on how visible the object is.
-                    double opacityBonus = 1.0 + max_opacity_bonus * (1.0 - osuCurrent.OpacityAt(currentHitObject.StartTime, mods.OfType<OsuModHidden>().Any(m => !m.OnlyFadeApproachCircles.Value)));
+                    double opacityBonus = 1.0 + max_opacity_bonus * (1.0 - osuCurrent.OpacityAt(currentHitObject.StartTime, shouldCalculateHiddenOpacity));
 
                     flashlightDifficulty += stackNerf * opacityBonus * scalingFactor * jumpDistance / cumulativeStrainTime;
 
@@ -89,7 +89,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             flashlightDifficulty = DiffUtils.Pow(smallDistNerf * flashlightDifficulty, 2);
 
             // Additional bonus for Hidden due to there being no approach circles.
-            if (mods.OfType<OsuModHidden>().Any())
+            if (hiddenMod != null)
                 flashlightDifficulty *= 1.0 + hidden_bonus;
 
             // Nerf patterns with repeated angles.
