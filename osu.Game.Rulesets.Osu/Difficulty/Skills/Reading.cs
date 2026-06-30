@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Utils;
+using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Difficulty.Utils;
@@ -17,7 +18,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
     public class Reading : HarmonicSkill
     {
-        private readonly List<DifficultyHitObject> objectList = new List<DifficultyHitObject>();
+        private readonly double clockRate;
+        private readonly IBeatmap beatmap;
 
         private readonly bool hasHiddenMod;
         private readonly bool hasTouchDeviceMod;
@@ -26,8 +28,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private readonly OsuModMagnetised? magnetisedMod;
 
-        public Reading(Mod[] mods)
+        public Reading(Mod[] mods, double clockRate, IBeatmap beatmap)
         {
+            this.clockRate = clockRate;
+            this.beatmap = beatmap;
+
             hasHiddenMod = mods.OfType<OsuModHidden>().Any(m => !m.OnlyFadeApproachCircles.Value);
             hasTouchDeviceMod = mods.Any(m => m is OsuModTouchDevice);
             hasRelaxMod = mods.Any(m => m is OsuModRelax);
@@ -43,8 +48,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected override double ObjectDifficultyOf(DifficultyHitObject current)
         {
             const double skill_multiplier = 2.5;
-
-            objectList.Add(current);
 
             double decay = strainDecay(current.DeltaTime);
 
@@ -99,16 +102,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             const double reduced_difficulty_duration = 60 * 1000;
 
-            if (objectList.Count == 0)
+            if (beatmap.HitObjects.Count < 2)
                 return 0;
 
-            double reducedDuration = objectList.First().StartTime + reduced_difficulty_duration;
+            // We skip the first note as during difficulty hit object construction, we skip the first note in order to form a jump.
+            double reducedDuration = beatmap.HitObjects[1].StartTime * clockRate + reduced_difficulty_duration;
 
             int reducedNoteCount = 0;
 
-            foreach (var hitObject in objectList)
+            foreach (var hitObject in beatmap.HitObjects.Skip(1))
             {
-                if (hitObject.StartTime > reducedDuration)
+                if (hitObject.StartTime * clockRate > reducedDuration)
                     break;
 
                 reducedNoteCount++;

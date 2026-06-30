@@ -163,12 +163,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
         {
+            double clockRate = ModUtils.CalculateRateWithMods(mods);
+
             var skills = new List<Skill>
             {
                 new Aim(mods, true),
                 new Aim(mods, false),
                 new Speed(mods),
-                new Reading(mods)
+                new Reading(mods, clockRate, beatmap)
             };
 
             if (mods.Any(h => h is OsuModFlashlight))
