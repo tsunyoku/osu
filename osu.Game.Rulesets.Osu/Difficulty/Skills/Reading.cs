@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Utils;
-using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Difficulty.Utils;
@@ -18,9 +17,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
     public class Reading : HarmonicSkill
     {
-        private readonly double clockRate;
-        private readonly IBeatmap beatmap;
-
         private readonly bool hasHiddenMod;
         private readonly bool hasTouchDeviceMod;
         private readonly bool hasRelaxMod;
@@ -28,11 +24,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private readonly OsuModMagnetised? magnetisedMod;
 
-        public Reading(Mod[] mods, double clockRate, IBeatmap beatmap)
-        {
-            this.clockRate = clockRate;
-            this.beatmap = beatmap;
+        private double reducedNoteCount;
+        private double? reducedDuration;
 
+        public Reading(Mod[] mods)
+        {
             hasHiddenMod = mods.OfType<OsuModHidden>().Any(m => !m.OnlyFadeApproachCircles.Value);
             hasTouchDeviceMod = mods.Any(m => m is OsuModTouchDevice);
             hasRelaxMod = mods.Any(m => m is OsuModRelax);
@@ -48,11 +44,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected override double ObjectDifficultyOf(DifficultyHitObject current)
         {
             const double skill_multiplier = 2.5;
+            const double reduced_difficulty_duration = 60 * 1000;
 
             double decay = strainDecay(current.DeltaTime);
 
             currentStrain *= decay;
             currentStrain += calculateAdjustedDifficulty(current) * (1 - decay) * skill_multiplier;
+
+            reducedDuration ??= current.StartTime + reduced_difficulty_duration;
+
+            if (current.StartTime <= reducedDuration)
+                reducedNoteCount++;
 
             return currentStrain;
         }
@@ -87,8 +89,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             const double reduced_difficulty_base_line = 0.0; // Assume the first seconds are completely memorised
 
-            int reducedNoteCount = calculateReducedNoteCount();
-
             for (int i = 0; i < Math.Min(difficulties.Count, reducedNoteCount); i++)
             {
                 double scale = Math.Log10(Interpolation.Lerp(1, 10, Math.Clamp((double)i / reducedNoteCount, 0, 1)));
@@ -96,29 +96,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             }
 
             return difficulties;
-        }
-
-        private int calculateReducedNoteCount()
-        {
-            const double reduced_difficulty_duration = 60 * 1000;
-
-            if (beatmap.HitObjects.Count < 2)
-                return 0;
-
-            // We skip the first note as during difficulty hit object construction, we skip the first note in order to form a jump.
-            double reducedDuration = beatmap.HitObjects[1].StartTime * clockRate + reduced_difficulty_duration;
-
-            int reducedNoteCount = 0;
-
-            foreach (var hitObject in beatmap.HitObjects.Skip(1))
-            {
-                if (hitObject.StartTime * clockRate > reducedDuration)
-                    break;
-
-                reducedNoteCount++;
-            }
-
-            return reducedNoteCount;
         }
 
         public override double CountTopWeightedObjectDifficulties(double difficultyValue, double objectWeightSum)
