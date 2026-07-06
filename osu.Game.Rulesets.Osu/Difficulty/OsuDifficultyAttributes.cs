@@ -52,6 +52,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         public double ReadingDifficulty { get; set; }
 
         /// <summary>
+        /// The difficulty corresponding to the hybrid skill.
+        /// </summary>
+        [JsonProperty("hybrid_difficulty")]
+        public double HybridDifficulty { get; set; }
+
+        /// <summary>
         /// Describes how much of <see cref="AimDifficulty"/> is contributed to by hitcircles or sliders.
         /// A value closer to 1.0 indicates most of <see cref="AimDifficulty"/> is contributed by hitcircles.
         /// A value closer to 0.0 indicates most of <see cref="AimDifficulty"/> is contributed by sliders.
@@ -83,6 +89,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         [JsonProperty("reading_difficult_note_count")]
         public double ReadingDifficultNoteCount { get; set; }
+
+        [JsonProperty("hybrid_difficult_note_count")]
+        public double HybridDifficultNoteCount { get; set; }
 
         [JsonProperty("nested_score_per_object")]
         public double NestedScorePerObject { get; set; }

@@ -38,15 +38,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             var speed = skills.OfType<Speed>().Single();
             var flashlight = skills.OfType<Flashlight>().SingleOrDefault();
             var reading = skills.OfType<Reading>().Single();
+            var hybrid = skills.OfType<Hybrid>().Single();
 
             double aimDifficultyValue = aim.DifficultyValue();
             double aimNoSlidersDifficultyValue = aimWithoutSliders.DifficultyValue();
             double speedDifficultyValue = speed.DifficultyValue();
             double readingDifficultyValue = reading.DifficultyValue();
+            double hybridDifficultyValue = hybrid.DifficultyValue();
 
             double aimDifficultStrainCount = aim.CountTopWeightedStrains(aimDifficultyValue);
             double speedDifficultStrainCount = speed.CountTopWeightedObjectDifficulties(speedDifficultyValue);
             double readingDifficultNoteCount = reading.CountTopWeightedObjectDifficulties(readingDifficultyValue);
+            double hybridDifficultNoteCount = hybrid.CountTopWeightedObjectDifficulties(hybridDifficultyValue);
 
             double speedNotes = speed.RelevantObjectCount();
 
@@ -73,6 +76,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double aimRating = calculateAimDifficultyRating(aimDifficultyValue);
             double speedRating = calculateDifficultyRating(speedDifficultyValue);
             double readingRating = calculateDifficultyRating(readingDifficultyValue);
+            double hybridRating = calculateDifficultyRating(hybridDifficultyValue);
 
             double flashlightRating = 0.0;
 
@@ -89,9 +93,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double baseSpeedPerformance = HarmonicSkill.DifficultyToPerformance(speedRating);
             double baseReadingPerformance = HarmonicSkill.DifficultyToPerformance(readingRating);
             double baseFlashlightPerformance = Flashlight.DifficultyToPerformance(flashlightRating);
+            double baseHybridPerformance = HarmonicSkill.DifficultyToPerformance(hybridRating);
             double baseCognitionPerformance = SumCognitionDifficulty(baseReadingPerformance, baseFlashlightPerformance);
 
-            double basePerformance = DiffUtils.Norm(OsuPerformanceCalculator.PERFORMANCE_NORM_EXPONENT, baseAimPerformance, baseSpeedPerformance, baseCognitionPerformance);
+            double basePerformance = DiffUtils.Norm(OsuPerformanceCalculator.PERFORMANCE_NORM_EXPONENT, baseAimPerformance, baseSpeedPerformance, baseHybridPerformance, baseCognitionPerformance);
 
             double starRating = calculateStarRating(basePerformance);
 
@@ -105,6 +110,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 SpeedNoteCount = speedNotes,
                 FlashlightDifficulty = flashlightRating,
                 ReadingDifficulty = readingRating,
+                HybridDifficulty = hybridRating,
+                HybridDifficultNoteCount = hybridDifficultNoteCount,
                 SliderFactor = sliderFactor,
                 AimDifficultStrainCount = aimDifficultStrainCount,
                 SpeedDifficultStrainCount = speedDifficultStrainCount,
@@ -167,7 +174,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 new Aim(mods, true),
                 new Aim(mods, false),
                 new Speed(mods),
-                new Reading(mods)
+                new Reading(mods),
+                new Hybrid(mods)
             };
 
             if (mods.Any(h => h is OsuModFlashlight))

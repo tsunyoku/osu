@@ -24,6 +24,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         [JsonProperty("reading")]
         public double Reading { get; set; }
 
+        [JsonProperty("hybrid")]
+        public double Hybrid { get; set; }
+
         [JsonProperty("effective_miss_count")]
         public double EffectiveMissCount { get; set; }
 
@@ -52,6 +55,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             yield return new PerformanceDisplayAttribute(nameof(Accuracy), "Accuracy", Accuracy);
             yield return new PerformanceDisplayAttribute(nameof(Flashlight), "Flashlight Bonus", Flashlight);
             yield return new PerformanceDisplayAttribute(nameof(Reading), "Reading", Reading);
+            yield return new PerformanceDisplayAttribute(nameof(Hybrid), "Hybrid", Hybrid);
         }
     }
 }

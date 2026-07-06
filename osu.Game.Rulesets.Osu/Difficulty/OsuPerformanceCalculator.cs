@@ -159,8 +159,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double readingValue = computeReadingValue(osuAttributes);
             double flashlightValue = computeFlashlightValue(score, osuAttributes);
             double cognitionValue = OsuDifficultyCalculator.SumCognitionDifficulty(readingValue, flashlightValue);
+            double hybridValue = computeHybridValue(score, osuAttributes);
 
-            double totalValue = DiffUtils.Norm(PERFORMANCE_NORM_EXPONENT, aimValue, speedValue, accuracyValue, cognitionValue) * multiplier;
+            double totalValue = DiffUtils.Norm(PERFORMANCE_NORM_EXPONENT, aimValue, speedValue, hybridValue, accuracyValue, cognitionValue) * multiplier;
 
             return new OsuPerformanceAttributes
             {
@@ -169,6 +170,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 Accuracy = accuracyValue,
                 Flashlight = flashlightValue,
                 Reading = readingValue,
+                Hybrid = hybridValue,
                 EffectiveMissCount = effectiveMissCount,
                 ComboBasedEstimatedMissCount = comboBasedEstimatedMissCount,
                 ScoreBasedEstimatedMissCount = scoreBasedEstimatedMissCount,
@@ -340,6 +342,25 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             readingValue *= DiffUtils.Pow(accuracy, 3);
 
             return readingValue;
+        }
+
+        private double computeHybridValue(ScoreInfo score, OsuDifficultyAttributes attributes)
+        {
+            if (score.Mods.Any(h => h is OsuModRelax || h is OsuModAutopilot))
+                return 0.0;
+
+            double hybridValue = HarmonicSkill.DifficultyToPerformance(attributes.HybridDifficulty);
+
+            if (effectiveMissCount > 0)
+            {
+                double relevantMissCount = Math.Min(effectiveMissCount + speedEstimatedSliderBreaks, totalImperfectHits + countSliderTickMiss);
+
+                hybridValue *= calculateMissPenalty(relevantMissCount, attributes.HybridDifficultNoteCount);
+            }
+
+            hybridValue *= accuracy;
+
+            return hybridValue;
         }
 
         private double calculateComboBasedEstimatedMissCount(OsuDifficultyAttributes attributes)
