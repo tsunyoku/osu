@@ -346,7 +346,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         private double computeHybridValue(ScoreInfo score, OsuDifficultyAttributes attributes)
         {
-            if (score.Mods.Any(h => h is OsuModRelax || h is OsuModAutopilot))
+            if (score.Mods.Any(h => h is OsuModRelax || h is OsuModAutopilot) || speedDeviation is null)
                 return 0.0;
 
             double hybridValue = HarmonicSkill.DifficultyToPerformance(attributes.HybridDifficulty);
@@ -358,7 +358,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 hybridValue *= calculateMissPenalty(relevantMissCount, attributes.HybridDifficultNoteCount);
             }
 
-            hybridValue *= accuracy;
+            // An effective hit window is created based on the speed SR. The higher the speed difficulty, the shorter the hit window.
+            // For example, a speed SR of 4.0 leads to an effective hit window of 20ms, which is OD 10.
+            double effectiveHitWindow = 20 * DiffUtils.Pow(4 / attributes.SpeedDifficulty, 0.35);
+
+            // Find the proportion of 300s on speed notes assuming the hit window was the effective hit window.
+            double effectiveAccuracy = DiffUtils.Erf(effectiveHitWindow / (double)speedDeviation);
+
+            // Scale hybrid value by normalized accuracy.
+            hybridValue *= DiffUtils.Pow(effectiveAccuracy, 2);
 
             return hybridValue;
         }
